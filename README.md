@@ -282,25 +282,26 @@ flowchart LR
 ### Architecture Description
 🌱 SoilFusion – Workflow Description
 
-.) The farmer registers, creates farms, and divides them into fields.
+- The farmer registers, creates farms, and divides them into fields.
 
-.) Sensors are installed in each field to continuously collect soil data.
+- Sensors are installed in each field to continuously collect soil data.
 
-.) Sensor readings are stored as CSV logs and processed by the system.
+- Sensor readings are stored as CSV logs and processed by the system.
 
-.) The system analyzes key soil parameters and combines them with weather data.
+- The system analyzes key soil parameters and combines them with weather data.
 
-.) Soil trends are generated to understand overall field health.
+- Soil trends are generated to understand overall field health.
 
-.) If abnormal conditions are detected, an alert is created and an SMS is sent to the farmer.
+- If abnormal conditions are detected, an alert is created and an SMS is sent to the farmer.
 
-.) If soil conditions are healthy, the system recommends suitable crops and the best planting window.
+- If soil conditions are healthy, the system recommends suitable crops and the best planting window.
 
-.) Planting history and yield data are recorded to track crop performance.
+- Planting history and yield data are recorded to track crop performance.
 
-.) All insights, trends, and recommendations are shown on the dashboard.
+- All insights, trends, and recommendations are shown on the dashboard.
 
-.) The farmer uses this information to make informed, data-driven decisions.
+- The farmer uses this information to make informed, data-driven decisions.
+
 ### Architecture Flow
 
 ```mermaid
@@ -407,15 +408,8 @@ SENSOR_READINGS {
     float value
 }
 
-WEATHER_STATIONS {
-    int station_id PK
-    varchar station_name
-    varchar location
-}
-
 WEATHER_DATA {
     int weather_id PK
-    int station_id FK
     int field_id FK
     float rainfall
     float humidity
@@ -426,9 +420,18 @@ WEATHER_DATA {
 SOIL_ANALYSIS {
     int analysis_id PK
     int field_id FK
-    datetime analysis_time
     varchar parameter
     float value
+    datetime analysis_time
+}
+
+INSIGHTS {
+    int insight_id PK
+    int field_id FK
+    varchar parameter
+    varchar simple_explanation
+    varchar recommendation
+    datetime generated_at
 }
 
 ALERTS {
@@ -474,8 +477,8 @@ FARMS ||--o{ FIELDS : contains
 FIELDS ||--o{ SENSORS : installs
 SENSORS ||--o{ SENSOR_READINGS : records
 FIELDS ||--o{ WEATHER_DATA : receives
-WEATHER_STATIONS ||--o{ WEATHER_DATA : generates
 FIELDS ||--o{ SOIL_ANALYSIS : analyzes
+FIELDS ||--o{ INSIGHTS : generates
 FIELDS ||--o{ ALERTS : triggers
 ALERTS ||--o{ SMS_NOTIFICATIONS : sends
 FIELDS ||--o{ PLANTING_HISTORY : planted
@@ -483,6 +486,7 @@ CROPS ||--o{ PLANTING_HISTORY : used_for
 FIELDS ||--o{ YIELD_HISTORY : produces
 CROPS ||--o{ YIELD_HISTORY : related_to
 ```
+
 
 ### ER Diagram Description
 
@@ -579,20 +583,17 @@ Overall, the ER diagram shows how the system connects sensor data, environmental
 
 - Live Demo Link:
 - Demo Video Link:
-- GitHub Repository:
+- [GitHub Repository:](https://github.com/White-D-coder/soilfusion)
 
 ---
 
 ## 13. Hackathon Deliverables Summary
 
--
--
--
--
-
+- Developed a Soil Health Dashboard that processes soil sensor CSV logs and converts raw soil data into structured soil health insights.
+- Implemented analysis of soil parameters such as moisture, pH, nitrogen, and temperature to monitor soil health trends.
+- Designed an alert and recommendation system that detects abnormal soil conditions and notifies farmers through dashboard alerts and SMS notifications.
+- Built a farmer friendly insight layer that translates complex scientific soil data into simple explanations and actionable recommendations.
 ---
-
-## 14. Team Roles & Responsibilities
 
 ## 14. Team Roles & Responsibilities
 
@@ -607,31 +608,23 @@ Overall, the ER diagram shows how the system connects sensor data, environmental
 ## 15. Future Scope & Scalability
 
 ### Short-Term
-- Integrate real-time IoT sensors to automatically collect soil data instead of manual CSV uploads.
-- Improve data visualization with advanced dashboards and interactive soil health reports.
-- Implement more accurate alert thresholds for parameters like moisture, pH, and nitrogen levels.
-- Add weather API integration to enhance soil condition analysis and predictions.
+- Integrate real time IoT sensors, improve dashboard visualizations, refine alert thresholds, and add weather API integration to enhance soil monitoring and analysis.
 
 ### Long-Term
-- Apply machine learning models to predict crop yield and optimal planting schedules.
-- Build a mobile application for farmers to receive alerts and insights in real time.
-- Integrate satellite and remote sensing data for large-scale soil monitoring.
-- Expand the system to support smart irrigation recommendations and automated farm management.
+- Expand the system using machine learning, mobile applications, satellite data, and smart irrigation systems to enable large scale predictive farming and automated farm management.
 
 ## 16. Known Limitations
 
-- The current system relies on uploaded CSV sensor logs rather than real-time IoT sensor streaming.
-- Soil analysis accuracy depends on the quality and completeness of the available dataset.
-- Weather data integration is limited and may not fully represent micro climate variations across different fields.
-- Crop recommendation logic is currently rule based and may require machine learning models for higher accuracy.
-- Large-scale deployments may require optimized data pipelines and cloud infrastructure for handling high frequency sensor data.
+- The current system relies on uploaded CSV sensor logs instead of real time IoT sensor data, which limits continuous monitoring.
+- Soil analysis and crop recommendations depend on dataset quality and currently use rule-based logic rather than advanced machine learning models.
+- Large scale deployments may require improved weather integration, optimized data pipelines, and cloud infrastructure to handle high-frequency sensor data.
 
 ---
 
 ## 17. Impact
 
-- Helps farmers understand soil health trends instead of relying only on raw sensor readings.
-- Enables early detection of soil issues such as low moisture or nutrient imbalance through smart alerts.
-- Supports data driven farming decisions for irrigation, planting, and soil treatment.
-- Improves long term soil sustainability by monitoring soil conditions over time.
-- Reduces productivity loss by providing actionable insights from soil sensor data.
+- Helps farmers understand soil health trends through clear insights instead of relying only on raw sensor readings.
+- Enables early detection of soil issues (e.g., low moisture or nutrient imbalance) through smart alerts and monitoring.
+- Supports data-driven farming decisions for irrigation, planting, and soil treatment, improving productivity and long term soil sustainability.
+
+
