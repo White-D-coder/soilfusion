@@ -280,43 +280,83 @@ flowchart LR
 ```
 
 ### Architecture Description
+🌱 SoilFusion – Workflow Description
+
+.) The farmer registers, creates farms, and divides them into fields.
+
+.) Sensors are installed in each field to continuously collect soil data.
+
+.) Sensor readings are stored as CSV logs and processed by the system.
+
+.) The system analyzes key soil parameters and combines them with weather data.
+
+.) Soil trends are generated to understand overall field health.
+
+.) If abnormal conditions are detected, an alert is created and an SMS is sent to the farmer.
+
+.) If soil conditions are healthy, the system recommends suitable crops and the best planting window.
+
+.) Planting history and yield data are recorded to track crop performance.
+
+.) All insights, trends, and recommendations are shown on the dashboard.
+
+.) The farmer uses this information to make informed, data-driven decisions.
+### Architecture Flow
 
 ```mermaid
 flowchart LR
 
-A[Farmer Uploads Soil Sensor CSV Logs] --> B[System Reads and Structures Data]
+A[Farmer Registers Account] --> B[Farmer Creates Farm and Fields]
 
-B --> C[Analyze Soil Parameters<br/>pH Moisture Nitrogen Temperature]
+B --> C[Sensors Installed in Fields]
 
-C --> D[Track Soil Health Trends Over Time]
+C --> D[Sensors Generate Soil Data]
 
-D --> E{Abnormal Soil Condition Detected}
+D --> E[Sensor Readings Stored as CSV Logs]
 
-E -->|Yes| F[Generate Smart Alert<br/>Suggest Delay Irrigation or Soil Treatment]
+E --> F[System Processes and Structures Data]
 
-E -->|No| G[Soil Within Healthy Range]
+F --> G[Analyze Soil Parameters<br/>Moisture pH Nitrogen Temperature]
 
-G --> H[Recommend Suitable Crops and Planting Window]
+G --> H[Weather Station Provides Weather Data<br/>Rainfall Humidity Temperature]
 
-F --> I[Update Dashboard with Insights]
-H --> I
+H --> I[Combine Sensor Data and Weather Data]
 
-I --> J[Display Visual Trends and Reports]
+I --> J[Generate Soil Analysis and Trends]
 
-J --> K[Farmer Takes Data Driven Decision]
+J --> K{Abnormal Soil Condition Detected}
 
-%% Styles
+K -->|Yes| L[Generate Alert<br/>Low Moisture High Temperature Nutrient Deficiency]
+
+L --> M[Send SMS Notification to Farmer]
+
+K -->|No| N[Soil Conditions Healthy]
+
+N --> O[Recommend Suitable Crops<br/>Suggest Optimal Planting Window]
+
+O --> P[Record Planting History]
+
+P --> Q[Analyze Yield History for Crop Performance]
+
+M --> R[Update Dashboard with Insights]
+Q --> R
+
+R --> S[Display Soil Health Trends Reports and Recommendations]
+
+S --> T[Farmer Takes Data Driven Decision]
+
+%% styles
 classDef process fill:#56CCF2,stroke:#2F80ED,stroke-width:2px,color:#000;
 classDef decision fill:#BB6BD9,stroke:#8E44AD,stroke-width:2px,color:#fff;
 classDef alert fill:#FF6B6B,stroke:#C0392B,stroke-width:2px,color:#fff;
 classDef healthy fill:#27AE60,stroke:#1E8449,stroke-width:2px,color:#fff;
 classDef final fill:#F2C94C,stroke:#B7950B,stroke-width:2px,color:#000;
 
-class B,C,D,I,J process;
-class E decision;
-class F alert;
-class G,H healthy;
-class K final;
+class C,D,E,F,G,H,I,J,R,S process;
+class K decision;
+class L,M alert;
+class N,O healthy;
+class T final;
 ```
 
 ---
