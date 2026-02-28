@@ -193,13 +193,16 @@ If soil conditions are within optimal ranges, suggest suitable crops and plantin
 
 ## 3. Proposed Solution
 
-The proposed solution is a Soil Health Dashboard with an Intelligent Recommendation and Alert System that transforms raw soil sensor data into actionable insights for farmers.
-The system processes soil sensor logs containing parameters such as pH, moisture, nitrogen levels, and temperature. Through time-series analysis, the platform tracks soil health trends and detects abnormal conditions when parameters exceed defined thresholds.
-When unusual conditions occur—for example, a sudden drop in soil pH due to acid rain—the system generates alerts and informs farmers with recommended actions such as delaying planting or monitoring soil recovery.
-If soil conditions remain within optimal ranges, the system analyzes soil characteristics and historical yield data to recommend suitable crops and optimal planting windows.
-This approach enables farmers to make proactive, data-driven decisions, improving crop productivity and long-term soil health.
+1) Alerts for problems
 
-### Solution Overview
+If something goes wrong (e.g., pH drops suddenly, moisture too low, nitrogen low), the system sends instant alerts like:
+"Soil is getting too acidic — wait a few days or add lime before planting."
+
+3) Smart suggestions when soil is good
+   
+When everything is in the healthy range, it checks soil + past yield data and recommends:
+Best crops to plant right now (e.g., moong, wheat, tomato, okra)
+Good planting window (e.g., "Next 7–10 days look perfect — start sowing")
 
 | Component               | Function                                       | Benefit                                  |
 | ----------------------- | ---------------------------------------------- | ---------------------------------------- |
