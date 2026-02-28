@@ -12,6 +12,9 @@ from xgboost import XGBRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
 from sklearn.preprocessing import LabelEncoder
+from skl2onnx import convert_sklearn
+from skl2onnx.common.data_types import FloatTensorType
+import onnxruntime as rt
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -193,9 +196,14 @@ class SoilFusionMLPipeline:
         rf_pred = rf.predict(X_test)
         rf_r2 = r2_score(y_test, rf_pred)
         
+        X_train_xgb = X_train.copy()
+        X_test_xgb = X_test.copy()
+        X_train_xgb.columns = [f"f{i}" for i in range(len(features))]
+        X_test_xgb.columns = [f"f{i}" for i in range(len(features))]
+        
         xgb = XGBRegressor(n_estimators=100, random_state=42)
-        xgb.fit(X_train, y_train)
-        xgb_pred = xgb.predict(X_test)
+        xgb.fit(X_train_xgb, y_train)
+        xgb_pred = xgb.predict(X_test_xgb)
         xgb_r2 = r2_score(y_test, xgb_pred)
         
         logging.info(f"RandomForest -> R2: {rf_r2:.4f}, RMSE: {np.sqrt(mean_squared_error(y_test, rf_pred)):.4f}")
@@ -206,7 +214,17 @@ class SoilFusionMLPipeline:
         best_pred = rf_pred if rf_r2 >= xgb_r2 else xgb_pred
         
         logging.info(f"Selected Best Model: {best_name}")
-        joblib.dump(best_model, os.path.join(self.model_dir, 'yield_model.pkl'))
+        
+        initial_type = [('float_input', FloatTensorType([None, len(features)]))]
+        if best_name == "XGBoost":
+            from onnxmltools.convert import convert_xgboost
+            onx = convert_xgboost(best_model, initial_types=initial_type)
+        else:
+            onx = convert_sklearn(best_model, initial_types=initial_type)
+            
+        with open(os.path.join(self.model_dir, 'yield_model.onnx'), "wb") as f:
+            f.write(onx.SerializeToString())
+            
         self.models['yield_model'] = best_model
         
         plt.figure(figsize=(10, 6))
@@ -241,7 +259,11 @@ class SoilFusionMLPipeline:
         pct = (len(anomalies) / len(df)) * 100
         logging.info(f"Isolation Forest flagged {pct:.2f}% of the timeline as anomalies.")
         
-        joblib.dump(iso_forest, os.path.join(self.model_dir, 'anomaly_model.pkl'))
+        initial_type = [('float_input', FloatTensorType([None, len(features)]))]
+        onx = convert_sklearn(iso_forest, initial_types=initial_type, target_opset={'': 15, 'ai.onnx.ml': 3})
+        with open(os.path.join(self.model_dir, 'anomaly_model.onnx'), "wb") as f:
+            f.write(onx.SerializeToString())
+            
         self.models['anomaly_model'] = iso_forest
         self.processed_df = df
         
@@ -285,7 +307,8 @@ def get_soil_health_score(moisture, ph, nitrogen, is_anomalous):
     return total_score, risk_level
 
 def predict_yield(field_id, pipeline):
-    model = joblib.load(os.path.join(pipeline.model_dir, 'yield_model.pkl'))
+    sess = rt.InferenceSession(os.path.join(pipeline.model_dir, 'yield_model.onnx'))
+    input_name = sess.get_inputs()[0].name
     df = pipeline.processed_df
     
     field_data = df[df['field_id'] == field_id].iloc[-1]
@@ -312,11 +335,13 @@ def predict_yield(field_id, pipeline):
         'stability_score': field_data['stability_score']
     }])
     
-    prediction = model.predict(X_input)[0]
-    return prediction
+    input_data = X_input.values.astype(np.float32)
+    prediction = sess.run(None, {input_name: input_data})[0][0][0]
+    return float(prediction)
 
 def detect_anomaly(field_id, pipeline):
-    model = joblib.load(os.path.join(pipeline.model_dir, 'anomaly_model.pkl'))
+    sess = rt.InferenceSession(os.path.join(pipeline.model_dir, 'anomaly_model.onnx'))
+    input_name = sess.get_inputs()[0].name
     df = pipeline.processed_df
     field_data = df[df['field_id'] == field_id].iloc[-1]
     
@@ -328,7 +353,8 @@ def detect_anomaly(field_id, pipeline):
         'rainfall': field_data['rainfall']
     }])
     
-    pred_label = model.predict(features)[0]
+    input_data = features.values.astype(np.float32)
+    pred_label = sess.run(None, {input_name: input_data})[0][0]
     is_anomaly = (pred_label == -1)
     if is_anomaly:
         logging.warning(f"ALERT: Abnormal Soil Trends Detected on {field_id}!")
