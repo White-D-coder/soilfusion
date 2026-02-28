@@ -39,6 +39,9 @@ Farmers are surrounded by numbers but lack the tools to convert those numbers in
 
 
 
+
+
+
 -----
 
 
@@ -132,34 +135,314 @@ E --> F[Farmer Insights]
 ## 2. Problem Understanding & Approach
 
 ### Root Cause Analysis
+
+| Problem Area             | Root Cause                                                       | Impact on Farmers                                                   |
+| ------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Raw Sensor Logs          | Soil sensors generate raw CSV logs without structured processing | Farmers cannot easily interpret soil conditions                     |
+| Lack of Trend Tracking   | No time-series analysis of soil parameters                       | Long-term soil degradation goes unnoticed                           |
+| No Threshold Detection   | Absence of defined parameter limits for alerts                   | Critical soil conditions are detected too late                      |
+| No Parameter Correlation | Soil parameters are not correlated with historical yield         | Farmers cannot understand which soil conditions affect productivity |
+| Poor Data Visualization  | Raw data is difficult to interpret without dashboards            | Decision making becomes slow and reactive                           |
+
+
+
+```mermaid
+flowchart TD
+
+A([Start: Soil Sensors Collect Data]) --> B[/Raw CSV Sensor Logs/]
+
+B --> C[Lack of Structured Analysis]
+
+C --> D{Are Analytical Systems Available?}
+
+D -->|No| E[No Time-Series Trend Tracking]
+D -->|No| F[No Threshold Monitoring]
+D -->|No| G[No Soil-Yield Correlation]
+D -->|No| H[No Visualization Dashboard]
+
+E --> I[Soil Health Issues Go Unnoticed]
+F --> I
+G --> I
+H --> I
+
+I --> J[Poor Planting Decisions]
+
+J --> K([End: Reduced Agricultural Productivity])
+```
+
+
 ### Solution Strategy
+
+
+1) Ingest Soil Sensor Data
+Process soil sensor logs stored in CSV format.
+
+3) Analyze Soil Parameters
+Perform time series analysis on parameters such as pH, moisture, nitrogen levels, and temperature to monitor soil health trends.
+
+5) Detect Abnormal Soil Conditions
+Identify threshold breaches or sudden changes in soil parameters that may indicate issues such as acid rain impact or nutrient imbalance.
+
+7) Generate Farmer Alerts
+Notify farmers when soil conditions become unfavorable and recommend temporary actions such as delaying planting.
+
+9) Recommend Suitable Crops
+If soil conditions are within optimal ranges, suggest suitable crops and planting windows using soil parameter analysis and historical yield data.
 
 ---
 
 ## 3. Proposed Solution
 
-### Solution Overview
-### Core Idea
+1) Alerts for problems
+
+If something goes wrong (e.g., pH drops suddenly, moisture too low, nitrogen low), the system sends instant alerts like:
+"Soil is getting too acidic wait a few days or add lime before planting."
+
+3) Smart suggestions when soil is good
+   
+When everything is in the healthy range, it checks soil and past yield data and recommends:
+Best crops to plant right now (e.g., moong, wheat, tomato, okra)
+Good planting window (e.g., "Next 7 to 10 days look perfect start sowing")
+
+| Component               | Function                                       | Benefit                                  |
+| ----------------------- | ---------------------------------------------- | ---------------------------------------- |
+| CSV Data Ingestion      | Reads soil sensor logs                         | Converts raw data into structured format |
+| Time-Series Analysis    | Tracks soil parameter trends                   | Detects long-term soil health changes    |
+| Threshold Monitoring    | Detects abnormal soil conditions               | Enables early warning alerts             |
+| Event Detection         | Identifies events like acid rain impact        | Explains cause of soil imbalance         |
+| Soil–Yield Correlation  | Compares soil conditions with historical yield | Improves crop recommendations            |
+| Recommendation Engine   | Suggests suitable crops when soil is healthy   | Guides planting decisions                |
+| Alert System            | Sends alerts when soil conditions are unsafe   | Prevents poor planting decisions         |
+| Visualization Dashboard | Displays soil health trends                    | Makes insights easy to understand        |
+
+
+```mermaid
+flowchart TD
+
+A([Start: Soil Sensor Data Collection]) --> B[/CSV Sensor Logs/]
+
+B --> C[Process and Analyze Soil Parameters]
+
+C --> D[Time-Series Soil Trend Analysis]
+
+D --> E{Is Soil Condition Optimal?}
+
+E -->|No| F[Detect Soil Issue e.g. Acid Rain Impact]
+
+F --> G[Generate Soil Health Alert]
+
+G --> H[Notify Farmer]
+
+H --> I[Suggested Action: Wait or Monitor Soil]
+
+E -->|Yes| J[Analyze Soil Suitability for Crops]
+
+J --> K[Recommend Suitable Crops]
+
+K --> L[Suggest Optimal Planting Window]
+
+I --> M([End: Farmer Takes Action])
+L --> M
+```
+
 ### Key Features
+
+
+1) Real-time soil health monitoring
+
+2) Early alerts for abnormal soil conditions
+
+3) Detection of environmental impacts (e.g., acid rain)
+
+4) Visualization of soil health trends
+
+5) Data-driven crop recommendations
+
+6) Actionable insights for farmers
+
+
+
+
+
 
 ---
 
 ## 4. System Architecture
 
 ### High-Level Flow
-User → Frontend → Backend → Model → Database → Response
+```mermaid
+flowchart LR
+    A[CSV / Sensor Data] --> B[Data Cleaning Layer]
+    B --> C[Time-Series & Trend Analysis]
+    C --> D[Intelligence Engine]
+    D --> E[Soil Health Score & Recommendation]
+    E --> F[Dashboard & Database]
+```
 
 ### Architecture Description
 
-### Architecture Diagram
-(Add system architecture diagram image here)
+```mermaid
+flowchart LR
+
+A[Farmer Uploads Soil Sensor CSV Logs] --> B[System Reads and Structures Data]
+
+B --> C[Analyze Soil Parameters<br/>pH Moisture Nitrogen Temperature]
+
+C --> D[Track Soil Health Trends Over Time]
+
+D --> E{Abnormal Soil Condition Detected}
+
+E -->|Yes| F[Generate Smart Alert<br/>Suggest Delay Irrigation or Soil Treatment]
+
+E -->|No| G[Soil Within Healthy Range]
+
+G --> H[Recommend Suitable Crops and Planting Window]
+
+F --> I[Update Dashboard with Insights]
+H --> I
+
+I --> J[Display Visual Trends and Reports]
+
+J --> K[Farmer Takes Data Driven Decision]
+
+%% Styles
+classDef process fill:#56CCF2,stroke:#2F80ED,stroke-width:2px,color:#000;
+classDef decision fill:#BB6BD9,stroke:#8E44AD,stroke-width:2px,color:#fff;
+classDef alert fill:#FF6B6B,stroke:#C0392B,stroke-width:2px,color:#fff;
+classDef healthy fill:#27AE60,stroke:#1E8449,stroke-width:2px,color:#fff;
+classDef final fill:#F2C94C,stroke:#B7950B,stroke-width:2px,color:#000;
+
+class B,C,D,I,J process;
+class E decision;
+class F alert;
+class G,H healthy;
+class K final;
+```
 
 ---
 
 ## 5. Database Design
 
-### ER Diagram
-(Add ER diagram image here)
+## ER Diagram
+
+```mermaid
+erDiagram
+
+USERS {
+    int user_id PK
+    varchar name
+    varchar email
+    bigint phone
+    varchar role
+}
+
+FARMS {
+    int farm_id PK
+    int user_id FK
+    varchar farm_name
+    varchar location
+}
+
+FIELDS {
+    int field_id PK
+    int farm_id FK
+    varchar field_name
+    varchar soil_type
+    float area
+}
+
+SENSORS {
+    int sensor_id PK
+    int field_id FK
+    varchar sensor_name
+    varchar sensor_type
+    varchar unit
+    datetime install_date
+}
+
+SENSOR_READINGS {
+    int reading_id PK
+    int sensor_id FK
+    datetime timestamp
+    float value
+}
+
+WEATHER_STATIONS {
+    int station_id PK
+    varchar station_name
+    varchar location
+}
+
+WEATHER_DATA {
+    int weather_id PK
+    int station_id FK
+    int field_id FK
+    float rainfall
+    float humidity
+    float temperature
+    datetime timestamp
+}
+
+SOIL_ANALYSIS {
+    int analysis_id PK
+    int field_id FK
+    datetime analysis_time
+    varchar parameter
+    float value
+}
+
+ALERTS {
+    int alert_id PK
+    int field_id FK
+    varchar alert_type
+    varchar severity
+    varchar message
+    datetime created_at
+}
+
+SMS_NOTIFICATIONS {
+    int sms_id PK
+    int alert_id FK
+    bigint phone
+    varchar message
+    datetime sent_at
+}
+
+CROPS {
+    int crop_id PK
+    varchar crop_name
+    int growth_period_days
+}
+
+PLANTING_HISTORY {
+    int planting_id PK
+    int field_id FK
+    int crop_id FK
+    datetime planting_date
+}
+
+YIELD_HISTORY {
+    int yield_id PK
+    int field_id FK
+    int crop_id FK
+    float yield_value
+    varchar season
+}
+
+USERS ||--o{ FARMS : owns
+FARMS ||--o{ FIELDS : contains
+FIELDS ||--o{ SENSORS : installs
+SENSORS ||--o{ SENSOR_READINGS : records
+FIELDS ||--o{ WEATHER_DATA : receives
+WEATHER_STATIONS ||--o{ WEATHER_DATA : generates
+FIELDS ||--o{ SOIL_ANALYSIS : analyzes
+FIELDS ||--o{ ALERTS : triggers
+ALERTS ||--o{ SMS_NOTIFICATIONS : sends
+FIELDS ||--o{ PLANTING_HISTORY : planted
+CROPS ||--o{ PLANTING_HISTORY : used_for
+FIELDS ||--o{ YIELD_HISTORY : produces
+CROPS ||--o{ YIELD_HISTORY : related_to
+```
 
 ### ER Diagram Description
 
