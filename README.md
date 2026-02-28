@@ -178,7 +178,7 @@ J --> K([End: Reduced Agricultural Productivity])
 Process soil sensor logs stored in CSV format.
 
 3) Analyze Soil Parameters
-Perform time-series analysis on parameters such as pH, moisture, nitrogen levels, and temperature to monitor soil health trends.
+Perform time series analysis on parameters such as pH, moisture, nitrogen levels, and temperature to monitor soil health trends.
 
 5) Detect Abnormal Soil Conditions
 Identify threshold breaches or sudden changes in soil parameters that may indicate issues such as acid rain impact or nutrient imbalance.
@@ -196,13 +196,13 @@ If soil conditions are within optimal ranges, suggest suitable crops and plantin
 1) Alerts for problems
 
 If something goes wrong (e.g., pH drops suddenly, moisture too low, nitrogen low), the system sends instant alerts like:
-"Soil is getting too acidic — wait a few days or add lime before planting."
+"Soil is getting too acidic wait a few days or add lime before planting."
 
 3) Smart suggestions when soil is good
    
-When everything is in the healthy range, it checks soil + past yield data and recommends:
+When everything is in the healthy range, it checks soil and past yield data and recommends:
 Best crops to plant right now (e.g., moong, wheat, tomato, okra)
-Good planting window (e.g., "Next 7–10 days look perfect — start sowing")
+Good planting window (e.g., "Next 7 to 10 days look perfect start sowing")
 
 | Component               | Function                                       | Benefit                                  |
 | ----------------------- | ---------------------------------------------- | ---------------------------------------- |
