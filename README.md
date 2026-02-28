@@ -517,10 +517,18 @@ Overall, the ER diagram shows how the system connects sensor data, environmental
 ## 7. Model Selected
 
 ### Model Name
-### Selection Reasoning
-### Alternatives Considered
-### Evaluation Metrics
+**Rule-Based Soil Analysis Model**
 
+### Selection Reasoning
+The system uses a rule based model to analyze soil parameters such as **moisture, pH, nitrogen, and temperature**. Each parameter is compared with predefined agricultural thresholds to detect abnormal soil conditions and generate alerts or recommendations for farmers.
+
+### Alternatives Considered
+Machine learning models such as **Decision Trees, Random Forest, Regression models, clustering model** were considered for predicting soil health and crop yield. However, due to limited labeled datasets and hackathon time constraints, a rule-based approach was chosen for the prototype.
+
+### Evaluation Metrics
+- Detection of abnormal soil conditions  
+- Accuracy of alerts generated  
+- Quality of recommendations provided to farmers
 ---
 
 ## 8. Technology Stack
