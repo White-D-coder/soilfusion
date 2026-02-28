@@ -282,7 +282,126 @@ User → Frontend → Backend → Model → Database → Response
 ## 5. Database Design
 
 ### ER Diagram
-(Add ER diagram image here)
+## ER Diagram
+
+```mermaid
+erDiagram
+
+USERS {
+    int user_id PK
+    varchar name
+    varchar email
+    bigint phone
+    varchar role
+}
+
+FARMS {
+    int farm_id PK
+    int user_id FK
+    varchar farm_name
+    varchar location
+}
+
+FIELDS {
+    int field_id PK
+    int farm_id FK
+    varchar field_name
+    varchar soil_type
+    float area
+}
+
+SENSORS {
+    int sensor_id PK
+    int field_id FK
+    varchar sensor_name
+    varchar sensor_type
+    varchar unit
+    datetime install_date
+}
+
+SENSOR_READINGS {
+    int reading_id PK
+    int sensor_id FK
+    datetime timestamp
+    float value
+}
+
+WEATHER_STATIONS {
+    int station_id PK
+    varchar station_name
+    varchar location
+}
+
+WEATHER_DATA {
+    int weather_id PK
+    int station_id FK
+    int field_id FK
+    float rainfall
+    float humidity
+    float temperature
+    datetime timestamp
+}
+
+SOIL_ANALYSIS {
+    int analysis_id PK
+    int field_id FK
+    datetime analysis_time
+    varchar parameter
+    float value
+}
+
+ALERTS {
+    int alert_id PK
+    int field_id FK
+    varchar alert_type
+    varchar severity
+    varchar message
+    datetime created_at
+}
+
+SMS_NOTIFICATIONS {
+    int sms_id PK
+    int alert_id FK
+    bigint phone
+    varchar message
+    datetime sent_at
+}
+
+CROPS {
+    int crop_id PK
+    varchar crop_name
+    int growth_period_days
+}
+
+PLANTING_HISTORY {
+    int planting_id PK
+    int field_id FK
+    int crop_id FK
+    datetime planting_date
+}
+
+YIELD_HISTORY {
+    int yield_id PK
+    int field_id FK
+    int crop_id FK
+    float yield_value
+    varchar season
+}
+
+USERS ||--o{ FARMS : owns
+FARMS ||--o{ FIELDS : contains
+FIELDS ||--o{ SENSORS : installs
+SENSORS ||--o{ SENSOR_READINGS : records
+FIELDS ||--o{ WEATHER_DATA : receives
+WEATHER_STATIONS ||--o{ WEATHER_DATA : generates
+FIELDS ||--o{ SOIL_ANALYSIS : analyzes
+FIELDS ||--o{ ALERTS : triggers
+ALERTS ||--o{ SMS_NOTIFICATIONS : sends
+FIELDS ||--o{ PLANTING_HISTORY : planted
+CROPS ||--o{ PLANTING_HISTORY : used_for
+FIELDS ||--o{ YIELD_HISTORY : produces
+CROPS ||--o{ YIELD_HISTORY : related_to
+```
 
 ### ER Diagram Description
 
