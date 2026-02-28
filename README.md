@@ -594,31 +594,44 @@ Overall, the ER diagram shows how the system connects sensor data, environmental
 
 ## 14. Team Roles & Responsibilities
 
+## 14. Team Roles & Responsibilities
+
 | Member Name | Role | Responsibilities |
-|-------------|------|-----------------|
+|-------------|------|------------------|
+| Anubhav Gupta | Team Leader & Frontend Developer | Coordinated the team and worked on frontend development. Designed the dashboard interface,and helped integrate the frontend with backend APIs. |
+| Surya Narayan | Data Researcher | Researched soil sensor datasets and agricultural parameters such as moisture, pH, nitrogen, and temperature. Helped the team understand the data and supported logic design for analysis. |
+| Deeptanu Bhunia | AI/ML & Backend Developer | Worked on backend development and AI/ML related components. Implemented data processing logic, helped build the analysis pipeline for soil data, and assisted with backend APIs and database integration. |
 
 ---
 
 ## 15. Future Scope & Scalability
 
 ### Short-Term
--
+- Integrate real-time IoT sensors to automatically collect soil data instead of manual CSV uploads.
+- Improve data visualization with advanced dashboards and interactive soil health reports.
+- Implement more accurate alert thresholds for parameters like moisture, pH, and nitrogen levels.
+- Add weather API integration to enhance soil condition analysis and predictions.
 
 ### Long-Term
--
-
----
+- Apply machine learning models to predict crop yield and optimal planting schedules.
+- Build a mobile application for farmers to receive alerts and insights in real time.
+- Integrate satellite and remote sensing data for large-scale soil monitoring.
+- Expand the system to support smart irrigation recommendations and automated farm management.
 
 ## 16. Known Limitations
 
--
--
--
+- The current system relies on uploaded CSV sensor logs rather than real-time IoT sensor streaming.
+- Soil analysis accuracy depends on the quality and completeness of the available dataset.
+- Weather data integration is limited and may not fully represent micro climate variations across different fields.
+- Crop recommendation logic is currently rule based and may require machine learning models for higher accuracy.
+- Large-scale deployments may require optimized data pipelines and cloud infrastructure for handling high frequency sensor data.
 
 ---
 
 ## 17. Impact
 
--
--
--
+- Helps farmers understand soil health trends instead of relying only on raw sensor readings.
+- Enables early detection of soil issues such as low moisture or nutrient imbalance through smart alerts.
+- Supports data driven farming decisions for irrigation, planting, and soil treatment.
+- Improves long term soil sustainability by monitoring soil conditions over time.
+- Reduces productivity loss by providing actionable insights from soil sensor data.
