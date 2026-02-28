@@ -281,7 +281,6 @@ flowchart LR
 
 ### Architecture Description
 
-### Architecture Diagram
 ```mermaid
 flowchart LR
 
@@ -324,7 +323,6 @@ class K final;
 
 ## 5. Database Design
 
-### ER Diagram
 ## ER Diagram
 
 ```mermaid
