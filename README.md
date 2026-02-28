@@ -270,13 +270,55 @@ L --> M
 ## 4. System Architecture
 
 ### High-Level Flow
-User → Frontend → Backend → Model → Database → Response
+```mermaid
+flowchart LR
+    A[CSV / Sensor Data] --> B[Data Cleaning Layer]
+    B --> C[Time-Series & Trend Analysis]
+    C --> D[Intelligence Engine]
+    D --> E[Soil Health Score & Recommendation]
+    E --> F[Dashboard & Database]
+```
 
 ### Architecture Description
 
 ### Architecture Diagram
-(Add system architecture diagram image here)
+```mermaid
+flowchart LR
 
+A[Farmer Uploads Soil Sensor CSV Logs] --> B[System Reads and Structures Data]
+
+B --> C[Analyze Soil Parameters<br/>pH Moisture Nitrogen Temperature]
+
+C --> D[Track Soil Health Trends Over Time]
+
+D --> E{Abnormal Soil Condition Detected}
+
+E -->|Yes| F[Generate Smart Alert<br/>Suggest Delay Irrigation or Soil Treatment]
+
+E -->|No| G[Soil Within Healthy Range]
+
+G --> H[Recommend Suitable Crops and Planting Window]
+
+F --> I[Update Dashboard with Insights]
+H --> I
+
+I --> J[Display Visual Trends and Reports]
+
+J --> K[Farmer Takes Data Driven Decision]
+
+%% Styles
+classDef process fill:#56CCF2,stroke:#2F80ED,stroke-width:2px,color:#000;
+classDef decision fill:#BB6BD9,stroke:#8E44AD,stroke-width:2px,color:#fff;
+classDef alert fill:#FF6B6B,stroke:#C0392B,stroke-width:2px,color:#fff;
+classDef healthy fill:#27AE60,stroke:#1E8449,stroke-width:2px,color:#fff;
+classDef final fill:#F2C94C,stroke:#B7950B,stroke-width:2px,color:#000;
+
+class B,C,D,I,J process;
+class E decision;
+class F alert;
+class G,H healthy;
+class K final;
+```
 ---
 
 ## 5. Database Design
