@@ -486,6 +486,18 @@ CROPS ||--o{ YIELD_HISTORY : related_to
 
 ### ER Diagram Description
 
+The ER diagram illustrates the database structure of the SoilFusion Soil Monitoring System, which manages farms, fields, sensors, and agricultural data to monitor soil health and support better farming decisions.
+The system starts with Users, who represent farmers or administrators using the platform. Each user can manage multiple Farms, and every farm can contain several Fields where crops are grown.
+
+Each field can have multiple Sensors installed to monitor soil parameters such as moisture, pH, nitrogen, and temperature. These sensors continuously generate Sensor Readings, which store time series data collected from the field.
+
+The system also collects environmental information through Weather Stations and Weather Data, which helps understand how weather conditions affect soil health.
+Using the collected sensor data, the system performs Soil Analysis to identify patterns and trends in soil conditions. When abnormal conditions are detected, the system generates Alerts, which can trigger SMS Notifications to inform farmers directly on their phone.
+
+Additionally, the system keeps track of Crops, Planting History, and Yield History. This allows the platform to analyze how soil conditions impact crop productivity over time.
+Overall, the ER diagram shows how the system connects sensor data, environmental factors, and farming activities to transform raw soil readings into meaningful agricultural insights.
+
+
 ---
 
 ## 6. Dataset Selected
