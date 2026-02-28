@@ -26,6 +26,17 @@ Farmers are surrounded by numbers but lack the tools to convert those numbers in
 | **Decision Paralysis**                      | Farming decisions such as planting or irrigation depend heavily on correct timing.               | Without clear insights, farmers rely on intuition instead of data-driven decisions.  |
 
 
+  ## Current Situation v/s Desired Outcome
+
+
+
+| Current Situation                     | Desired Outcome                                          |
+| ------------------------------------- | -------------------------------------------------------- |
+| Raw sensor logs stored as CSV files   | Intelligent dashboards that visualize soil health trends |
+| Farmers manually interpret numbers    | Automated insights and recommendations                   |
+| Alerts triggered by simple thresholds | Smart alerts that filter noise and detect real risks     |
+| Short-term data snapshots             | Long-term soil health analysis and predictions           |
+
 
 
 
