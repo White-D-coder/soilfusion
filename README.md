@@ -39,6 +39,79 @@ Farmers are surrounded by numbers but lack the tools to convert those numbers in
 
 
 
+-----
+
+
+## Target Users
+
+```mermaid
+flowchart TD
+A[SoilFusion System] --> B[Farmers]
+A --> C[Farm Managers]
+A --> D[Agricultural Analysts]
+A --> E[AgriTech Developers]
+```
+
+
+
+| Category                                 | Details                                                                         |
+| ---------------------------------------- | ------------------------------------------------------------------------------- |
+| **Geographical Focus**                   | India 🇮🇳                                                                      |
+| **Estimated Farmers Using Soil Sensors** | ~30,00,000 (30 Lakh)                                                            |
+| **Type of Data Generated**               | Time-series soil data (pH, Moisture, Nitrogen, Temperature)                     |
+| **Current Market Gap**                   | Raw sensor data lacks structured visualization, correlation, and interpretation |
+| **Opportunity Identified**               | Development of a Soil Health Intelligence & Analytics Platform                  |
+
+
+
+
+| User Segment               | Description                                            | Key Needs                                                   |
+| -------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- |
+| **Sensor-Enabled Farmers** | Farmers already collecting soil data using IoT sensors | Actionable insights, early alerts, planting recommendations |
+| **Data Format**            | CSV-based sensor logs (time-series data)               | Visualization dashboards & parameter correlation            |
+| **Primary Goal**           | Maintain optimal soil health for maximum yield         | Data-driven decision-making                                 |
+
+
+
+| Parameter                | Description                                                                                |
+| ------------------------ | ------------------------------------------------------------------------------------------ |
+| **Initial Target Users** | 3,000 Farmers                                                                              |
+| **Purpose**              | Pilot deployment & product validation                                                      |
+| **Key Objectives**       | Improve threshold detection, reduce false positives, refine planting recommendation models |
+| **Expected Outcome**     | Achieve Product–Market Fit & real-world validation                                         |
+
+
+
+
+  ### Existing Gaps
+
+## Existing Gap vs SoilFusion Improvement
+
+```mermaid
+xychart-beta
+title "Without Solution (Current System)"
+x-axis ["Data Interpretation","Trend Monitoring","Alert Accuracy","Decision Support","Yield Correlation"]
+y-axis "Capability Score (%)" 0 --> 100
+bar [25,20,30,15,10]
+```
+
+```mermaid
+xychart-beta
+title "With SoilFusion Solution"
+x-axis ["Data Interpretation","Trend Monitoring","Alert Accuracy","Decision Support","Yield Correlation"]
+y-axis "Capability Score (%)" 0 --> 100
+bar [85,80,75,90,70]
+```
+
+  
+
+| # | Limitation in Existing Systems                   | Impact on Farmers                             |
+| - | ------------------------------------------------ | --------------------------------------------- |
+| 1 | Data collected but not effectively visualized    | Farmers cannot interpret trends easily        |
+| 2 | No proper correlation with historical yield data | Poor understanding of long-term soil behavior |
+| 3 | No advisory or predictive insights               | No guidance for planting or soil optimization |
+| 4 | No intelligent alerts                            | Delayed reaction to soil degradation          |
+| 5 | Raw logs without interpretation                  | Reduced practical usability                   |
 
 
 
@@ -46,8 +119,17 @@ Farmers are surrounded by numbers but lack the tools to convert those numbers in
 
 
 
-### Target Users
-### Existing Gaps
+## System Workflow
+
+```mermaid
+flowchart LR
+A[Soil Sensors] --> B[CSV Logs]
+B --> C[Data Processing]
+C --> D[Trend Analysis]
+D --> E[Dashboard]
+E --> F[Farmer Insights]
+```
+
 
 ---
 
