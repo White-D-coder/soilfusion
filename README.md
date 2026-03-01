@@ -1,6 +1,6 @@
 # Project Title
 
-SoilFusion: Intelligent Soil Health Dashboard from Sensor Logs
+SoilFusion : Intelligent Soil Health Dashboard from Sensor Logs
 
 ---
 
