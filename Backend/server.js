@@ -21,7 +21,8 @@ const storage = multer.diskStorage({
         cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
-        cb(null, file.originalname);
+        const ext = path.extname(file.originalname);
+        cb(null, `sensor_readings${ext}`);
     }
 });
 
@@ -125,23 +126,44 @@ app.get('/api/ml/fields', (req, res) => {
 
         const header = lines[0].split(',');
         const fieldIdx = header.findIndex(col => col.trim() === 'field_id');
+        const farmerIdx = header.findIndex(col => col.trim() === 'farmer_name');
 
         if (fieldIdx === -1) return res.json({ fields: [] });
 
-        const fields = new Set();
+        const fieldMap = new Map();
         for (let i = 1; i < lines.length; i++) {
             const cols = lines[i].split(',');
             if (cols[fieldIdx]) {
                 const id = cols[fieldIdx].trim();
-                if (id) fields.add(id);
+                if (!id) continue;
+
+                let farmerName = id;
+                if (farmerIdx !== -1 && cols[farmerIdx]) {
+                    farmerName = cols[farmerIdx].trim() || id;
+                }
+
+                if (!fieldMap.has(id)) {
+                    fieldMap.set(id, farmerName);
+                }
             }
         }
-        res.json({ fields: Array.from(fields) });
+
+        const fieldsArray = Array.from(fieldMap.entries()).map(([id, name]) => ({ id, name }));
+        res.json({ fields: fieldsArray });
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch fields' });
     }
 });
 
+// Configure keeping the server awake on Render Free Tier
+const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+setInterval(() => {
+    fetch(`${RENDER_EXTERNAL_URL}/api/health`)
+        .then(res => res.json())
+        .then(data => console.log('Keep-alive ping successful:', data.message))
+        .catch(err => console.error('Keep-alive ping failed:', err.message));
+}, 10 * 60 * 1000); // Ping every 10 minutes
+
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT} / External URL: ${RENDER_EXTERNAL_URL}`);
 });

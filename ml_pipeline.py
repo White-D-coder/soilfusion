@@ -59,7 +59,7 @@ class SoilFusionMLPipeline:
         
         if missing:
             logging.warning(f"Missing files {missing}. Generating high-fidelity synthetic data...")
-            self._generate_synthetic_data()
+            self._generate_synthetic_data(missing)
             
         logging.info("Loading Data...")
         self.fields = pd.read_csv(os.path.join(self.data_dir, 'fields.csv'))
@@ -68,11 +68,43 @@ class SoilFusionMLPipeline:
         self.yield_history = pd.read_csv(os.path.join(self.data_dir, 'yield_history.csv'))
         self.crops = pd.read_csv(os.path.join(self.data_dir, 'crops.csv'))
 
-        self.sensor_readings['timestamp'] = pd.to_datetime(self.sensor_readings['timestamp'])
-        self.sensor_readings['date'] = self.sensor_readings['timestamp'].dt.date
-        
-        # Check if user uploaded the new wide format CSV
-        if 'moisture_percent' in self.sensor_readings.columns:
+        # Check for User's Custom Tabular "Farmer" format
+        if 'Farmer' in self.sensor_readings.columns or 'farmer_name' in self.sensor_readings.columns:
+            if 'Farmer' in self.sensor_readings.columns:
+                df = self.sensor_readings.rename(columns={
+                    'N': 'nitrogen', 'P': 'phosphorus', 'K': 'potassium',
+                    'pH': 'ph', 'Temp': 'temperature', 'Rain': 'rainfall'
+                }).copy()
+                
+                unique_farmers = df['Farmer'].unique()
+                farmer_to_id = {f: 100000 + i for i, f in enumerate(unique_farmers)}
+                df['field_id'] = df['Farmer'].map(farmer_to_id)
+                df['farmer_name'] = df['Farmer']
+                
+                if 'moisture' not in df.columns:
+                    df['moisture'] = (20 + (df['rainfall'] / 50) - (df['temperature'] / 5)).clip(5, 60)
+                    if 'OM' in df.columns:
+                        df['moisture'] = (df['moisture'] + df['OM'] * 5).clip(5, 60)
+                
+                if 'humidity' not in df.columns:
+                    import numpy as np
+                    df['humidity'] = 50 + np.random.normal(0, 5, len(df))
+                    
+                df['date'] = pd.NaT
+                for fid in df['field_id'].unique():
+                    n_rows = len(df[df['field_id'] == fid])
+                    dates = pd.date_range(end=datetime.now(), periods=n_rows, freq='D')
+                    df.loc[df['field_id'] == fid, 'date'] = dates
+                
+                df.to_csv(os.path.join(self.data_dir, 'sensor_readings.csv'), index=False)
+            else:
+                df = self.sensor_readings.copy()
+                df['date'] = pd.to_datetime(df['date'])
+                
+        elif 'moisture_percent' in self.sensor_readings.columns:
+            # Check if user uploaded the new wide format CSV
+            self.sensor_readings['timestamp'] = pd.to_datetime(self.sensor_readings['timestamp'])
+            self.sensor_readings['date'] = self.sensor_readings['timestamp'].dt.date
             renames = {
                 'moisture_percent': 'moisture',
                 'temperature_c': 'temperature',
@@ -85,6 +117,8 @@ class SoilFusionMLPipeline:
             df['date'] = pd.to_datetime(df['date'])
         else:
             # Legacy format processing (if data was synthetic or old)
+            self.sensor_readings['timestamp'] = pd.to_datetime(self.sensor_readings['timestamp'])
+            self.sensor_readings['date'] = self.sensor_readings['timestamp'].dt.date
             daily_soil = self.sensor_readings.groupby(['field_id', 'date', 'parameter'])['value'].mean().unstack().reset_index()
             daily_soil.columns.name = None
             daily_soil['date'] = pd.to_datetime(daily_soil['date'])
@@ -98,46 +132,67 @@ class SoilFusionMLPipeline:
             
         df = pd.merge(df, self.fields[['field_id', 'soil_type']], on='field_id', how='left')
         
+        # In case Soil_Type came from Farmer CSV directly, fill NaNs
+        if 'Soil_Type' in df.columns and 'soil_type' in df.columns:
+            df['soil_type'] = df['soil_type'].fillna(df['Soil_Type'])
+        elif 'Soil_Type' in df.columns:
+            df['soil_type'] = df['Soil_Type']
+            
         self.raw_df = df
         return df
 
-    def _generate_synthetic_data(self):
+    def _generate_synthetic_data(self, missing_files=None):
+        if missing_files is None:
+            missing_files = ['sensor_readings.csv', 'fields.csv', 'weather_data.csv', 'yield_history.csv', 'crops.csv']
+            
         np.random.seed(42)
         dates = pd.date_range(end=datetime.now(), periods=100, freq='D')
         
-        fields_data = pd.DataFrame({
-            'field_id': [100001, 100002, 100003],
-            'farm_id': [200001, 200001, 200002],
-            'field_name': ['North Block', 'South Block', 'East Block'],
-            'soil_type': ['Clay', 'Loam', 'Sandy'],
-            'area': [5.5, 4.2, 8.0]
-        })
-        fields_data.to_csv(os.path.join(self.data_dir, 'fields.csv'), index=False)
+        if 'fields.csv' in missing_files:
+            fields_data = pd.DataFrame({
+                'field_id': [100001, 100002, 100003],
+                'farm_id': [200001, 200001, 200002],
+                'field_name': ['North Block', 'South Block', 'East Block'],
+                'soil_type': ['Clay', 'Loam', 'Sandy'],
+                'area': [5.5, 4.2, 8.0]
+            })
+            fields_data.to_csv(os.path.join(self.data_dir, 'fields.csv'), index=False)
+        else:
+            try:
+                fields_data = pd.read_csv(os.path.join(self.data_dir, 'fields.csv'))
+            except:
+                fields_data = pd.DataFrame({'field_id': [100001, 100002, 100003]})
         
-        readings, weather = [], []
-        for fid in fields_data['field_id']:
-            for d in dates:
-                readings.append([fid, d, 'moisture', np.random.normal(25, 5)])
-                readings.append([fid, d, 'ph', np.random.normal(6.5, 0.5)])
-                readings.append([fid, d, 'nitrogen', np.random.normal(50, 10)])
+        if 'sensor_readings.csv' in missing_files or 'weather_data.csv' in missing_files:
+            readings, weather = [], []
+            fids = fields_data['field_id'] if 'field_id' in fields_data.columns else [100001, 100002, 100003]
+            for fid in fids:
+                for d in dates:
+                    readings.append([fid, d, 'moisture', np.random.normal(25, 5)])
+                    readings.append([fid, d, 'ph', np.random.normal(6.5, 0.5)])
+                    readings.append([fid, d, 'nitrogen', np.random.normal(50, 10)])
+                    
+                    weather.append([fid, d, np.random.exponential(5), np.random.normal(60, 10), np.random.normal(25, 5)])
+                    
+            if 'sensor_readings.csv' in missing_files:
+                pd.DataFrame(readings, columns=['field_id', 'timestamp', 'parameter', 'value']).to_csv(os.path.join(self.data_dir, 'sensor_readings.csv'), index=False)
+            if 'weather_data.csv' in missing_files:
+                pd.DataFrame(weather, columns=['field_id', 'timestamp', 'rainfall', 'humidity', 'temperature']).to_csv(os.path.join(self.data_dir, 'weather_data.csv'), index=False)
                 
-                weather.append([fid, d, np.random.exponential(5), np.random.normal(60, 10), np.random.normal(25, 5)])
-                
-        pd.DataFrame(readings, columns=['field_id', 'timestamp', 'parameter', 'value']).to_csv(os.path.join(self.data_dir, 'sensor_readings.csv'), index=False)
-        pd.DataFrame(weather, columns=['field_id', 'timestamp', 'rainfall', 'humidity', 'temperature']).to_csv(os.path.join(self.data_dir, 'weather_data.csv'), index=False)
-        
-        crops_data = pd.DataFrame({'crop_id': [300001, 300002], 'crop_name': ['Wheat', 'Rice'], 'growth_period_days': [120, 150]})
-        crops_data.to_csv(os.path.join(self.data_dir, 'crops.csv'), index=False)
-        
-        yield_data = pd.DataFrame({
-            'yield_id': [400001, 400002, 400003],
-            'field_id': [100001, 100002, 100003],
-            'crop_id': [300001, 300002, 300001],
-            'yield_value': [4500, 5200, 3100],
-            'season': ['Kharif', 'Rabi', 'Kharif'],
-            'year': [2023, 2023, 2023]
-        })
-        yield_data.to_csv(os.path.join(self.data_dir, 'yield_history.csv'), index=False)
+        if 'crops.csv' in missing_files:
+            crops_data = pd.DataFrame({'crop_id': [300001, 300002], 'crop_name': ['Wheat', 'Rice'], 'growth_period_days': [120, 150]})
+            crops_data.to_csv(os.path.join(self.data_dir, 'crops.csv'), index=False)
+            
+        if 'yield_history.csv' in missing_files:
+            yield_data = pd.DataFrame({
+                'yield_id': [400001, 400002, 400003],
+                'field_id': [100001, 100002, 100003],
+                'crop_id': [300001, 300002, 300001],
+                'yield_value': [4500, 5200, 3100],
+                'season': ['Kharif', 'Rabi', 'Kharif'],
+                'year': [2023, 2023, 2023]
+            })
+            yield_data.to_csv(os.path.join(self.data_dir, 'yield_history.csv'), index=False)
 
     def preprocess_data(self):
         logging.info("Preprocessing Data & Engineering Features...")

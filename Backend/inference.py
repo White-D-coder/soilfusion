@@ -84,13 +84,29 @@ try:
     summary_text = f"{issue_en}\n\n{action_en}" if lang == "en" else f"{issue_hi}\n\n{action_hi}"
     recovery_text = recovery_en if lang == "en" else recovery_hi
 
+    # Extract historical data for Graph
+    if 'date' in field_records.columns:
+        field_records = field_records.sort_values('date')
+    recent_data = field_records.tail(14)
+    graph_data = []
+    for _, row in recent_data.iterrows():
+        dt_str = row['date'].strftime('%m-%d') if hasattr(row.get('date'), 'strftime') else str(row.get('date', ''))[:10]
+        graph_data.append({
+            "date": dt_str,
+            "moisture": round(float(row.get('moisture', 0)), 1),
+            "temperature": round(float(row.get('temperature', 0)), 1),
+            "ph": round(float(row.get('ph', 0)), 1),
+            "nitrogen": round(float(row.get('nitrogen', 0)), 1)
+        })
+
     output = {
         "field_id": field_id,
         "yield_prediction_kg_per_ha": float(yld),
         "anomaly_detected": bool(is_anom),
         "recommendation": rec,
         "recovery_time": recovery_text,
-        "summary": summary_text
+        "summary": summary_text,
+        "historical_data": graph_data
     }
     
     print(json.dumps(output))
