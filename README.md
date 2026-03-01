@@ -545,7 +545,7 @@ Machine learning models such as **Decision Trees, Random Forest, Regression mode
 - Accuracy of alerts generated  
 - Quality of recommendations provided to farmers
 ---
-### Technology Stack
+### 8. Technology Stack
 Frontend
 
 React.js for building an interactive dashboard UI, Tailwind CSS for responsive styling, and Chart.js for time-series visualization of soil parameters.
