@@ -601,7 +601,7 @@ Deployment
 
 ## 11. Demo & Video
 
-- Live Demo Link:
+- Live Demo Link: https://soilfusion-1.onrender.com
 - Demo Video Link:
 - GitHub Repository: https://github.com/White-D-coder/soilfusion
 - Presentation link: https://www.canva.com/design/DAHCqtcFiaA/sdnp4u9aVTVlx8RTbRDzMQ/edit?utm_content=DAHCqtcFiaA&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
