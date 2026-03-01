@@ -65,18 +65,6 @@ app.get('/api/auth/google/callback',
     }
 );
 
-// 3. Get current logged-in user
-app.get('/api/auth/me', (req, res) => {
-    if (!req.user) return res.json({ user: null });
-    res.json({
-        user: {
-            id: req.user._id,
-            name: req.user.name,
-            email: req.user.email,
-            picture: req.user.picture,
-        }
-    });
-});
 
 // 4. Logout
 app.get('/api/auth/logout', (req, res) => {
