@@ -506,11 +506,26 @@ Overall, the ER diagram shows how the system connects sensor data, environmental
 
 ## 6. Dataset Selected
 
-### Dataset Name
-### Source
-### Data Type
-### Selection Reason
-### Preprocessing Steps
+Dataset Selected
+Dataset Name
+
+Synthetic Soil Sensor & Yield Dataset (Hackathon Prototype Dataset)
+
+Source
+
+Generated using simulated IoT soil sensor readings combined with sample agricultural yield data based on Indian soil parameter ranges.
+
+Data Type
+
+Time-series CSV data containing soil parameters (pH, moisture, nitrogen, temperature), weather data, planting history, and crop yield records.
+
+Selection Reason
+
+Chosen to simulate real-world sensor logs and enable controlled testing of time-series analysis, threshold detection, and soil–yield correlation logic.
+
+Preprocessing Steps
+
+Handled missing values, removed sensor noise, normalized parameter ranges, converted timestamps to datetime format, and applied rolling averages for trend smoothing.
 
 ---
 
@@ -530,64 +545,61 @@ Machine learning models such as **Decision Trees, Random Forest, Regression mode
 - Accuracy of alerts generated  
 - Quality of recommendations provided to farmers
 ---
+echnology Stack
+Frontend
 
-## 8. Technology Stack
+React.js for building an interactive dashboard UI, Tailwind CSS for responsive styling, and Chart.js for time-series visualization of soil parameters.
 
-### Frontend
-### Backend
-### ML/AI
-### Database
-### Deployment
+Backend
+
+Node.js with Express.js for API development, CSV parsing for sensor log ingestion, and REST APIs for data processing and alert generation.
+
+ML/AI
+
+Rule-Based Soil Analysis Model using rolling averages, adaptive threshold detection, and multi-parameter correlation logic for soil health insights and planting recommendations.
+
+Database
+
+Relational database for storing users, farms, fields, sensors, sensor readings, weather data, alerts, planting history, and yield records.
+
+Deployment
 
 ---
 
 ## 9. API Documentation & Testing
 
 ### API Endpoints List
-- Endpoint 1:
-- Endpoint 2:
-- Endpoint 3:
+- Endpoint 1:http://localhost:5001/api/health
+- Endpoint 2:http://localhost:5001/api/upload
+- Endpoint 3:http://localhost:5001/api/ml/run-pipeline
 
 ### API Testing Screenshots
 (Add Postman / Thunder Client screenshots here)
 
----
+<img width="1189" height="766" alt="Screenshot 2026-03-01 at 10 06 07 AM" src="https://github.com/user-attachments/assets/a55ebf0c-68da-4e59-b245-2ed5c5a282cd"/>
 
-## 10. Module-wise Development & Deliverables
+<img width="1188" height="780" alt="Screenshot 2026-03-01 at 10 08 31 AM" src="https://github.com/user-attachments/assets/67d1574a-abed-4c01-be5d-cbf8b3816ad6" />
 
-### Checkpoint 1: Research & Planning
-- Deliverables:
 
-### Checkpoint 2: Backend Development
-- Deliverables:
+<img width="731" height="488" alt="Screenshot 2026-03-01 at 10 30 38 AM" src="https://github.com/user-attachments/assets/43c62c65-b93b-41ae-96c2-9a7f739611e6" />
 
-### Checkpoint 3: Frontend Development
-- Deliverables:
-
-### Checkpoint 4: Model Training
-- Deliverables:
-
-### Checkpoint 5: Model Integration
-- Deliverables:
-
-### Checkpoint 6: Deployment
-- Deliverables:
 
 ---
 
-## 11. End-to-End Workflow
+## 10. End-to-End Workflow
 
-1.
-2.
-3.
-4.
-5.
-6.
-7.
+1. Farmer registers, creates farms and fields, and installs soil sensors in each field.
+2. Sensors continuously collect soil data (pH, moisture, nitrogen, temperature) and store it as CSV logs.
+3. The system ingests and cleans the CSV data, converting raw logs into structured time-series records.
+4. Time-series analysis and rolling averages are applied to detect trends and abnormal soil conditions.
+5. The intelligence engine correlates soil parameters with historical planting and yield data.
+6. Smart alerts are generated for critical threshold breaches, and crop recommendations with planting windows are calculated when conditions are optimal.
+7. All insights, trends, alerts, and recommendations are displayed on the dashboard for data-driven farming decisions.
+
 
 ---
 
-## 12. Demo & Video
+## 11. Demo & Video
 
 - Live Demo Link:
 - Demo Video Link:
@@ -595,7 +607,7 @@ Machine learning models such as **Decision Trees, Random Forest, Regression mode
 
 ---
 
-## 13. Hackathon Deliverables Summary
+## 12. Hackathon Deliverables Summary
 
 - Developed a Soil Health Dashboard that processes soil sensor CSV logs and converts raw soil data into structured soil health insights.
 - Implemented analysis of soil parameters such as moisture, pH, nitrogen, and temperature to monitor soil health trends.
@@ -603,7 +615,7 @@ Machine learning models such as **Decision Trees, Random Forest, Regression mode
 - Built a farmer friendly insight layer that translates complex scientific soil data into simple explanations and actionable recommendations.
 ---
 
-## 14. Team Roles & Responsibilities
+## 13. Team Roles & Responsibilities
 
 | Member Name | Role | Responsibilities |
 |-------------|------|------------------|
@@ -613,7 +625,7 @@ Machine learning models such as **Decision Trees, Random Forest, Regression mode
 
 ---
 
-## 15. Future Scope & Scalability
+## 14. Future Scope & Scalability
 
 ### Short-Term
 - Integrate real time IoT sensors, improve dashboard visualizations, refine alert thresholds, and add weather API integration to enhance soil monitoring and analysis.
@@ -621,7 +633,7 @@ Machine learning models such as **Decision Trees, Random Forest, Regression mode
 ### Long-Term
 - Expand the system using machine learning, mobile applications, satellite data, and smart irrigation systems to enable large scale predictive farming and automated farm management.
 
-## 16. Known Limitations
+## 15. Known Limitations
 
 - The current system relies on uploaded CSV sensor logs instead of real time IoT sensor data, which limits continuous monitoring.
 - Soil analysis and crop recommendations depend on dataset quality and currently use rule-based logic rather than advanced machine learning models.
@@ -629,7 +641,7 @@ Machine learning models such as **Decision Trees, Random Forest, Regression mode
 
 ---
 
-## 17. Impact
+## 16. Impact
 
 - Helps farmers understand soil health trends through clear insights instead of relying only on raw sensor readings.
 - Enables early detection of soil issues (e.g., low moisture or nutrient imbalance) through smart alerts and monitoring.
