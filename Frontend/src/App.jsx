@@ -255,7 +255,7 @@ const Upload = ({ onSuccess }) => {
 // Field analyzer form
 // ─────────────────────────────────────────────
 const FieldForm = ({ fieldId, setFieldId, fields, onAnalyze, loading }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   return (
     <section id="sf-analyze">
       <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 px-1">{t('fiTitle')}</p>
@@ -279,15 +279,13 @@ const FieldForm = ({ fieldId, setFieldId, fields, onAnalyze, loading }) => {
             ))}
           </select>
         ) : (
-          <input
-            id="sf-fid"
-            type="number"
-            value={fieldId}
-            onChange={e => setFieldId(e.target.value)}
-            placeholder={t('fiPlaceholder')}
-            className="w-full border border-gray-200 rounded-xl px-3 py-3 bg-gray-50 text-gray-800 font-bold text-xl mb-3 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400"
+          <select
+            disabled
+            className="w-full border border-gray-200 rounded-xl px-3 py-3 bg-gray-100 text-gray-400 font-bold text-base mb-3 focus:outline-none"
             aria-label={t('fiLabel')}
-          />
+          >
+            <option>⏳ {lang === 'hi' ? 'Kripya pehle CSV data upload karein' : 'Please upload CSV data first'}</option>
+          </select>
         )}
 
         <Btn onClick={() => onAnalyze(fieldId)} disabled={!fieldId || loading} className="w-full">
