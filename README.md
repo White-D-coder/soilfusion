@@ -513,7 +513,7 @@ Synthetic Soil Sensor & Yield Dataset (Hackathon Prototype Dataset)
 
 Source
 
-Generated using simulated IoT soil sensor readings combined with sample agricultural yield data based on Indian soil parameter ranges.
+Kaggle
 
 Data Type
 
@@ -545,7 +545,7 @@ Machine learning models such as **Decision Trees, Random Forest, Regression mode
 - Accuracy of alerts generated  
 - Quality of recommendations provided to farmers
 ---
-echnology Stack
+### Technology Stack
 Frontend
 
 React.js for building an interactive dashboard UI, Tailwind CSS for responsive styling, and Chart.js for time-series visualization of soil parameters.
