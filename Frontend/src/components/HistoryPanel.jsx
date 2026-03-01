@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Clock, Trash2, TrendingUp, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:5001').replace(/\/+$/, '');
 
 const HistoryPanel = () => {
     const { user } = useAuth();

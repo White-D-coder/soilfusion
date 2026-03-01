@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AuthCtx = createContext(null);
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:5001').replace(/\/+$/, '');
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(undefined); // undefined = loading

@@ -21,11 +21,27 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/soilfusio
     .catch(err => console.error('❌ MongoDB connection error:', err.message));
 
 // ── Middleware ──────────────────────────────────────────────────────────────
+// Allow the specific FRONTEND_URL from env, plus localhost for local testing
+const allowedOrigins = [
+    FRONTEND_URL,
+    'http://localhost:5173',
+    'https://soilfusion.vercel.app' // Hardcoding the Vercel domain as a fallback
+];
+
 app.use(cors({
-    origin: FRONTEND_URL,
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,   // Required for cookies/sessions across origins
 }));
 app.use(express.json());
+
+// Trust the proxy (Render load balancer) so secure cookies can be set
+app.set('trust proxy', 1);
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'soilfusion-dev-secret',
