@@ -4,7 +4,7 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
     en: {
         translation: {
-            "app_title": "SoilFusion Portal",
+            "app_title": "SoilFusion",
             "accuracy_badge": "System Accuracy: >90% Verified",
             "upload_title": "Upload Sensor Data",
             "upload_desc": "Upload your raw CSV, Excel, or JSON sensor logs to kickstart ML model training.",
@@ -33,7 +33,7 @@ const resources = {
     },
     hi: {
         translation: {
-            "app_title": "सॉइलफ्यूजन पोर्टल",
+            "app_title": "SoilFusion",
             "accuracy_badge": "सिस्टम सटीकता: >90% प्रमाणित",
             "upload_title": "सेंसर डेटा अपलोड करें",
             "upload_desc": "अपनी मिट्टी का डेटा (CSV/Excel/JSON) अपलोड करें।",
@@ -66,7 +66,7 @@ i18n
     .use(initReactI18next)
     .init({
         resources,
-        lng: "en", // default language
+        lng: "en",
         fallbackLng: "en",
         interpolation: {
             escapeValue: false

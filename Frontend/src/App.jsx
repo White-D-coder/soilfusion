@@ -5,6 +5,10 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import LoginPage from './pages/LoginPage';
+import HistoryPanel from './components/HistoryPanel';
+
 
 const API = 'http://localhost:5001';
 
@@ -118,7 +122,8 @@ const wIcon = (c) => c === 0 ? '☀️' : c <= 2 ? '⛅' : c <= 48 ? '🌫️' :
 // Header
 // ─────────────────────────────────────────────
 const Header = () => {
-  const { lang, setLang, t } = useLanguage();
+  const { lang, setLang, t, languages } = useLanguage();
+  const { user, logout } = useAuth();
   const { weather, city } = useWeather();
 
   return (
@@ -136,21 +141,31 @@ const Header = () => {
               <div className="text-amber-100 text-[10px] leading-none hidden sm:block">{t('tagline')}</div>
             </div>
           </div>
-          {/* Lang toggle */}
-          <div className="flex-shrink-0 flex bg-white/20 rounded-lg p-0.5 gap-0.5">
-            {[['en', 'EN'], ['hi', 'हि']].map(([code, label]) => (
-              <button
-                key={code}
-                onClick={() => setLang(code)}
-                className={cls(
-                  'px-2.5 py-1.5 rounded-md text-xs font-bold transition',
-                  lang === code ? 'bg-white text-amber-700 shadow-sm' : 'text-white/80 hover:text-white'
-                )}
-                aria-pressed={lang === code}
+          {/* Right: lang dropdown + user avatar */}
+          <div className="flex-shrink-0 flex items-center gap-2">
+            <div className="flex bg-white/20 rounded-lg p-0.5">
+              <select
+                value={lang}
+                onChange={e => setLang(e.target.value)}
+                className="bg-transparent text-white text-xs font-bold px-2 py-1 rounded-md cursor-pointer outline-none"
+                aria-label="Select Language"
+                style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
               >
-                {label}
-              </button>
-            ))}
+                {(languages || []).map(({ code, label }) => (
+                  <option key={code} value={code} style={{ color: '#000', background: '#fff' }}>{label}</option>
+                ))}
+              </select>
+            </div>
+            {/* User avatar + logout */}
+            {user && (
+              <div className="flex items-center gap-1.5">
+                {user.picture
+                  ? <img src={user.picture} alt={user.name} className="w-7 h-7 rounded-full border-2 border-white/50" />
+                  : <div className="w-7 h-7 rounded-full bg-white/30 flex items-center justify-center text-white text-xs font-bold">{user.name?.[0]}</div>
+                }
+                <button onClick={logout} className="text-white/70 text-xs hover:text-white" title="Logout">✕</button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -560,11 +575,20 @@ const BottomNav = () => {
 // ─────────────────────────────────────────────
 function Inner() {
   const { t, lang } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
   const [fields, setFields] = useState([]);
   const [fieldId, setFieldId] = useState('');
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(false);
   const [alerts, setAlerts] = useState([]);
+
+  // Show login page if not authenticated
+  if (authLoading) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f6f8' }}>
+      <div style={{ fontSize: 32 }}>🌱</div>
+    </div>
+  );
+  if (!user) return <LoginPage />;
 
   const loadFields = useCallback(async () => {
     try {
@@ -636,6 +660,7 @@ function Inner() {
 
           {/* Left: forms */}
           <div className="space-y-4">
+            <HistoryPanel />
             <Upload onSuccess={handleUploadDone} />
             <FieldForm fieldId={fieldId} setFieldId={setFieldId} fields={fields} onAnalyze={analyze} loading={loading} />
           </div>
@@ -654,8 +679,10 @@ function Inner() {
 
 export default function App() {
   return (
-    <LanguageProvider>
-      <Inner />
-    </LanguageProvider>
+    <AuthProvider>
+      <LanguageProvider>
+        <Inner />
+      </LanguageProvider>
+    </AuthProvider>
   );
 }

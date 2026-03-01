@@ -30,7 +30,7 @@ const getLoc = async (lat, lon) => {
 };
 
 const Header = () => {
-    const { lang, setLang, t } = useLanguage();
+    const { lang, setLang, t, languages } = useLanguage();
     const [w, setW] = useState(null);
     const [loc, setLoc] = useState('');
 
@@ -66,16 +66,19 @@ const Header = () => {
                     {/* Right: lang toggle + bell */}
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                         <div className="flex bg-white/20 rounded-lg p-0.5">
-                            {[['en', 'EN'], ['hi', 'हि']].map(([code, label]) => (
-                                <button
-                                    key={code}
-                                    onClick={() => setLang(code)}
-                                    className={`px-2.5 py-1 rounded-md text-xs font-bold transition ${lang === code ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-100 hover:text-white'
-                                        }`}
-                                >
-                                    {label}
-                                </button>
-                            ))}
+                            <select
+                                value={lang}
+                                onChange={(e) => setLang(e.target.value)}
+                                className="bg-transparent text-white text-xs font-bold px-2 py-1 rounded-md cursor-pointer outline-none"
+                                aria-label="Select Language"
+                                style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
+                            >
+                                {languages.map(({ code, label }) => (
+                                    <option key={code} value={code} style={{ color: '#000', background: '#fff' }}>
+                                        {label}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                         <button
                             aria-label="Notifications"

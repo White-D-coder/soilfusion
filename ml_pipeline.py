@@ -54,7 +54,8 @@ class SoilFusionMLPipeline:
                 logging.error(f"Error converting {file}: {e}")
 
     def load_data(self):
-        required_files = ['sensor_readings.csv', 'fields.csv', 'weather_data.csv', 'yield_history.csv', 'crops.csv']
+        # weather_data.csv is optional — new format embeds weather cols in sensor_readings
+        required_files = ['sensor_readings.csv', 'fields.csv', 'yield_history.csv', 'crops.csv']
         missing = [f for f in required_files if not os.path.exists(os.path.join(self.data_dir, f))]
         
         if missing:
@@ -64,9 +65,10 @@ class SoilFusionMLPipeline:
         logging.info("Loading Data...")
         self.fields = pd.read_csv(os.path.join(self.data_dir, 'fields.csv'))
         self.sensor_readings = pd.read_csv(os.path.join(self.data_dir, 'sensor_readings.csv'))
-        self.weather_data = pd.read_csv(os.path.join(self.data_dir, 'weather_data.csv'))
         self.yield_history = pd.read_csv(os.path.join(self.data_dir, 'yield_history.csv'))
         self.crops = pd.read_csv(os.path.join(self.data_dir, 'crops.csv'))
+        weather_path = os.path.join(self.data_dir, 'weather_data.csv')
+        self.weather_data = pd.read_csv(weather_path) if os.path.exists(weather_path) else pd.DataFrame()
 
         # Check for User's Custom Tabular "Farmer" format
         if 'Farmer' in self.sensor_readings.columns or 'farmer_name' in self.sensor_readings.columns:
@@ -98,11 +100,11 @@ class SoilFusionMLPipeline:
                 
                 df.to_csv(os.path.join(self.data_dir, 'sensor_readings.csv'), index=False)
             else:
-                df = self.sensor_readings.copy()
-                df['date'] = pd.to_datetime(df['date'])
+                # farmer_name present with moisture_percent — use PATH A below
+                pass  # fall-through handled by moisture_percent check
                 
-        elif 'moisture_percent' in self.sensor_readings.columns:
-            # Check if user uploaded the new wide format CSV
+        if 'moisture_percent' in self.sensor_readings.columns:
+            # PATH A: new wide format (moisture_percent present — covers both new generated data and user uploads)
             self.sensor_readings['timestamp'] = pd.to_datetime(self.sensor_readings['timestamp'])
             self.sensor_readings['date'] = self.sensor_readings['timestamp'].dt.date
             renames = {
@@ -113,7 +115,8 @@ class SoilFusionMLPipeline:
                 'humidity_percent': 'humidity'
             }
             df = self.sensor_readings.rename(columns=renames).copy()
-            df = df.groupby(['field_id', 'date'])[['moisture', 'temperature', 'ph', 'nitrogen', 'rainfall', 'humidity']].mean().reset_index()
+            agg_cols = [c for c in ['moisture', 'temperature', 'ph', 'nitrogen', 'rainfall', 'humidity'] if c in df.columns]
+            df = df.groupby(['field_id', 'date'])[agg_cols].mean().reset_index()
             df['date'] = pd.to_datetime(df['date'])
         else:
             # Legacy format processing (if data was synthetic or old)

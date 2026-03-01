@@ -5,6 +5,8 @@ import {
 } from 'recharts';
 import { useLanguage } from '../context/LanguageContext';
 import { AlertTriangle, CheckCircle2, TrendingUp, Sprout, Clock, BarChart2 } from 'lucide-react';
+import FarmerSummarizer from './FarmerSummarizer';
+
 
 /* ── helpers ──────────────────────────────────────────────── */
 const pct = (v) => (typeof v === 'number' ? v : parseFloat(v) || 0);
@@ -226,6 +228,17 @@ const ResultsGrid = ({ insight }) => {
                 <YieldCard value={insight.yield_prediction_kg_per_ha} t={t} />
                 <CropCard rec={insight.recommendation} t={t} />
             </div>
+
+            {/* Farmer Summarizer – layman language problem summary */}
+            <FarmerSummarizer
+                moisture={latest?.moisture}
+                ph={latest?.ph}
+                nitrogen={latest?.nitrogen}
+                anomaly={insight.anomaly_detected}
+                yieldKg={insight.yield_prediction_kg_per_ha}
+                cropName={insight.recommendation?.Target_Crop}
+            />
+
 
             {/* Charts */}
             <TrendCharts data={insight.historical_data} t={t} />
