@@ -576,19 +576,13 @@ const BottomNav = () => {
 function Inner() {
   const { t, lang } = useLanguage();
   const { user, loading: authLoading } = useAuth();
+
+  // ── All hooks must be called unconditionally before any early returns ──
   const [fields, setFields] = useState([]);
   const [fieldId, setFieldId] = useState('');
   const [insight, setInsight] = useState(null);
   const [loading, setLoading] = useState(false);
   const [alerts, setAlerts] = useState([]);
-
-  // Show login page if not authenticated
-  if (authLoading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f6f8' }}>
-      <div style={{ fontSize: 32 }}>🌱</div>
-    </div>
-  );
-  if (!user) return <LoginPage />;
 
   const loadFields = useCallback(async () => {
     try {
@@ -624,6 +618,14 @@ function Inner() {
     const id = await loadFields();
     if (id) { setFieldId(id); analyze(id); }
   }, [loadFields, analyze]);
+
+  // ── Early returns AFTER all hooks ──────────────────────────────────────
+  if (authLoading) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f4f6f8' }}>
+      <div style={{ fontSize: 32 }}>🌱</div>
+    </div>
+  );
+  if (!user) return <LoginPage />;
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-[#f4f6f8]">

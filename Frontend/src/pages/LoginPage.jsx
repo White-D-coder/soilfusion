@@ -3,13 +3,25 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Leaf } from 'lucide-react';
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
 const LoginPage = () => {
     const { login, loading } = useAuth();
     const { t, lang, setLang, languages } = useLanguage();
 
+    const demoLogin = async () => {
+        try {
+            const r = await fetch(`${API}/api/auth/demo`, { method: 'POST', credentials: 'include' });
+            const data = await r.json();
+            if (data.user) window.location.reload();
+        } catch {
+            alert('Demo login failed. Please ensure the backend is running.');
+        }
+    };
+
     return (
         <div style={styles.page}>
-            {/* Lang selector top-right */}
+            {/* Language selector */}
             <div style={styles.langBar}>
                 <select
                     value={lang}
@@ -31,14 +43,13 @@ const LoginPage = () => {
                 <h1 style={styles.appName}>SoilFusion</h1>
                 <p style={styles.tagline}>{t('tagline')}</p>
 
-                {/* Divider */}
                 <div style={styles.divider} />
 
                 <p style={styles.welcome}>
-                    Apne khait ki poori jankari ek jagah paiye. Login karne ke liye Google account use karein.
+                    {t('loginWelcome')}
                 </p>
 
-                {/* Google Sign-In button */}
+                {/* Google Sign-In */}
                 <button
                     onClick={login}
                     disabled={loading}
@@ -51,27 +62,23 @@ const LoginPage = () => {
                         <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
                         <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
                     </svg>
-                    Google se Login Karen
+                    {t('loginGoogle')}
                 </button>
 
-                {/* Demo access button */}
+                {/* Demo access */}
                 <button
                     onClick={demoLogin}
                     disabled={loading}
                     style={styles.demoBtn}
                     id="demo-login-btn"
                 >
-                    🌾 Demo Access (Test karein)
+                    🌾 {t('loginDemo')}
                 </button>
 
-
-                <p style={styles.note}>
-                    Pehli baar login karne par aapka account automatic baan jayega. Koi alag registration nahi chahiye.
-                </p>
+                <p style={styles.note}>{t('loginNote')}</p>
             </div>
 
-            {/* Footer */}
-            <p style={styles.footer}>SoilFusion · Made with ❤️ for Indian Farmers</p>
+            <p style={styles.footer}>SoilFusion · {t('loginFooter')}</p>
         </div>
     );
 };
@@ -136,7 +143,24 @@ const styles = {
         cursor: 'pointer',
         transition: 'all 0.2s',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-        marginBottom: 16,
+        marginBottom: 12,
+    },
+    demoBtn: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        padding: '13px 20px',
+        background: 'linear-gradient(135deg, #2d6a4f, #52b788)',
+        border: 'none',
+        borderRadius: 12,
+        fontSize: 14,
+        fontWeight: 700,
+        color: '#fff',
+        cursor: 'pointer',
+        marginBottom: 20,
+        letterSpacing: 0.3,
+        boxShadow: '0 4px 14px rgba(45,106,79,0.35)',
     },
     note: { fontSize: 12, color: '#9CA3AF', lineHeight: 1.5, margin: 0 },
     footer: { color: 'rgba(255,255,255,0.6)', fontSize: 12, marginTop: 24 },

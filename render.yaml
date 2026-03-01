@@ -1,34 +1,27 @@
 services:
-  # ── Backend API (Node.js + Python ML) ──────────────────────
+  # Backend — Node.js + Python ML
   - type: web
     name: soilfusion-backend
     runtime: node
     rootDir: Backend
-    buildCommand: npm install
+    buildCommand: pip3 install pandas numpy scikit-learn xgboost onnxmltools skl2onnx && npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 5001
-    # Python for ML pipeline
-    buildFilter:
-      paths:
-        - Backend/**
-        - ml_pipeline.py
-        - inference.py
-        - data/**
+      - key: FRONTEND_URL
+        fromService:
+          name: soilfusion-frontend
+          type: web
+          property: host
 
-  # ── Frontend (Vite React) ────────────────────────────────
+  # Frontend — Vite React (static site)
   - type: web
     name: soilfusion-frontend
     runtime: static
     rootDir: Frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
-    buildFilter:
-      paths:
-        - Frontend/**
     routes:
       - type: rewrite
         source: /*
