@@ -70,7 +70,7 @@ app.post('/api/ml/run-pipeline', (req, res) => {
 });
 
 app.post('/api/ml/predict', (req, res) => {
-    const { field_id } = req.body;
+    const { field_id, lang } = req.body;
     if (!field_id) {
         return res.status(400).json({ error: 'field_id is required' });
     }
@@ -79,7 +79,12 @@ app.post('/api/ml/predict', (req, res) => {
     const venvPythonPath = path.join(__dirname, '..', 'venv', 'bin', 'python3');
     const cwdPath = path.join(__dirname, '..');
 
-    const pythonProcess = spawn(venvPythonPath, [inferenceScriptPath, field_id.toString()], { cwd: cwdPath });
+    const args = [inferenceScriptPath, field_id.toString()];
+    if (lang) {
+        args.push(lang);
+    }
+
+    const pythonProcess = spawn(venvPythonPath, args, { cwd: cwdPath });
 
     let outputData = '';
 
@@ -88,16 +93,53 @@ app.post('/api/ml/predict', (req, res) => {
     });
 
     pythonProcess.on('close', (code) => {
+        // Extract JSON from output that might contain python print logs
+        const jsonMatch = outputData.match(/\{[\s\S]*\}/);
+        const cleanJson = jsonMatch ? jsonMatch[0] : outputData;
+
         if (code !== 0) {
-            return res.status(500).json({ error: 'Inference failed' });
+            try {
+                const results = JSON.parse(cleanJson);
+                if (results.error) return res.status(500).json(results);
+            } catch (err) { }
+            return res.status(500).json({ error: 'Inference failed', raw: outputData });
         }
         try {
-            const results = JSON.parse(outputData);
+            const results = JSON.parse(cleanJson);
             res.json(results);
         } catch (err) {
             res.status(500).json({ error: 'Failed to parse inference output', raw: outputData });
         }
     });
+});
+
+app.get('/api/ml/fields', (req, res) => {
+    try {
+        const filePath = path.join(__dirname, '..', 'data', 'sensor_readings.csv');
+        if (!fs.existsSync(filePath)) {
+            return res.json({ fields: [] });
+        }
+        const data = fs.readFileSync(filePath, 'utf8');
+        const lines = data.trim().split('\n');
+        if (lines.length < 2) return res.json({ fields: [] });
+
+        const header = lines[0].split(',');
+        const fieldIdx = header.findIndex(col => col.trim() === 'field_id');
+
+        if (fieldIdx === -1) return res.json({ fields: [] });
+
+        const fields = new Set();
+        for (let i = 1; i < lines.length; i++) {
+            const cols = lines[i].split(',');
+            if (cols[fieldIdx]) {
+                const id = cols[fieldIdx].trim();
+                if (id) fields.add(id);
+            }
+        }
+        res.json({ fields: Array.from(fields) });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch fields' });
+    }
 });
 
 app.listen(PORT, () => {

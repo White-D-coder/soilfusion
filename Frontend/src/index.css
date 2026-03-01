@@ -4,13 +4,13 @@
 
 @layer base {
   body {
-    @apply bg-brand-dark text-slate-200 antialiased font-sans m-0 p-0;
+    @apply bg-[#FAF8F5] text-stone-800 antialiased font-sans m-0 p-0;
   }
 }
 
 @layer components {
   .glass-panel {
-    @apply bg-brand-surface/80 backdrop-blur-md rounded-2xl border border-slate-700/50 shadow-xl;
+    @apply bg-white/90 backdrop-blur-md rounded-2xl border border-emerald-100 shadow-xl;
   }
 }
 

@@ -71,16 +71,31 @@ class SoilFusionMLPipeline:
         self.sensor_readings['timestamp'] = pd.to_datetime(self.sensor_readings['timestamp'])
         self.sensor_readings['date'] = self.sensor_readings['timestamp'].dt.date
         
-        daily_soil = self.sensor_readings.groupby(['field_id', 'date', 'parameter'])['value'].mean().unstack().reset_index()
-        daily_soil.columns.name = None
-        daily_soil['date'] = pd.to_datetime(daily_soil['date'])
-        
-        self.weather_data['timestamp'] = pd.to_datetime(self.weather_data['timestamp'])
-        self.weather_data['date'] = self.weather_data['timestamp'].dt.date
-        daily_weather = self.weather_data.groupby(['field_id', 'date'])[['rainfall', 'humidity', 'temperature']].mean().reset_index()
-        daily_weather['date'] = pd.to_datetime(daily_weather['date'])
-        
-        df = pd.merge(daily_soil, daily_weather, on=['field_id', 'date'], how='inner')
+        # Check if user uploaded the new wide format CSV
+        if 'moisture_percent' in self.sensor_readings.columns:
+            renames = {
+                'moisture_percent': 'moisture',
+                'temperature_c': 'temperature',
+                'nitrogen_ppm': 'nitrogen',
+                'rainfall_mm': 'rainfall',
+                'humidity_percent': 'humidity'
+            }
+            df = self.sensor_readings.rename(columns=renames).copy()
+            df = df.groupby(['field_id', 'date'])[['moisture', 'temperature', 'ph', 'nitrogen', 'rainfall', 'humidity']].mean().reset_index()
+            df['date'] = pd.to_datetime(df['date'])
+        else:
+            # Legacy format processing (if data was synthetic or old)
+            daily_soil = self.sensor_readings.groupby(['field_id', 'date', 'parameter'])['value'].mean().unstack().reset_index()
+            daily_soil.columns.name = None
+            daily_soil['date'] = pd.to_datetime(daily_soil['date'])
+            
+            self.weather_data['timestamp'] = pd.to_datetime(self.weather_data['timestamp'])
+            self.weather_data['date'] = self.weather_data['timestamp'].dt.date
+            daily_weather = self.weather_data.groupby(['field_id', 'date'])[['rainfall', 'humidity', 'temperature']].mean().reset_index()
+            daily_weather['date'] = pd.to_datetime(daily_weather['date'])
+            
+            df = pd.merge(daily_soil, daily_weather, on=['field_id', 'date'], how='inner')
+            
         df = pd.merge(df, self.fields[['field_id', 'soil_type']], on='field_id', how='left')
         
         self.raw_df = df
