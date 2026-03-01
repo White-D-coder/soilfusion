@@ -3,6 +3,8 @@ import axios from 'axios';
 import { UploadCloud, FileText, X, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:5001').replace(/\/+$/, '');
+
 const UploadWidget = ({ onSuccess }) => {
     const { t } = useLanguage();
     const [file, setFile] = useState(null);
@@ -22,9 +24,9 @@ const UploadWidget = ({ onSuccess }) => {
         fd.append('file', file);
         try {
             setPhase('uploading'); setMsg(t('upload.uploading'));
-            await axios.post('http://localhost:5001/api/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+            await axios.post(`${API}/api/upload`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
             setPhase('processing'); setMsg(t('upload.processing'));
-            await axios.post('http://localhost:5001/api/ml/run-pipeline');
+            await axios.post(`${API}/api/ml/run-pipeline`);
             setPhase('done'); setMsg(t('upload.success'));
             onSuccess?.();
         } catch {

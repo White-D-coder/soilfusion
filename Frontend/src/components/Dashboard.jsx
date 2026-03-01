@@ -81,6 +81,8 @@ const BottomNav = ({ t, onUpload, onAnalyze }) => {
 };
 
 /* ─── Dashboard ──────────────────────────────────────────────────── */
+const API = (import.meta.env.VITE_API_URL || 'http://localhost:5001').replace(/\/+$/, '');
+
 const Dashboard = () => {
     const { t, lang } = useLanguage();
     const [fields, setFields] = useState([]);
@@ -91,7 +93,7 @@ const Dashboard = () => {
 
     const loadFields = useCallback(async () => {
         try {
-            const r = await axios.get('http://localhost:5001/api/ml/fields');
+            const r = await axios.get(`${API}/api/ml/fields`);
             const f = r.data.fields ?? [];
             setFields(f);
             return f[0] ? String(f[0]) : '';
@@ -115,7 +117,7 @@ const Dashboard = () => {
         if (!id) return;
         setLoading(true); setInsight(null); setAlerts([]);
         try {
-            const r = await axios.post('http://localhost:5001/api/ml/predict', { field_id: parseInt(id), lang });
+            const r = await axios.post(`${API}/api/ml/predict`, { field_id: parseInt(id), lang });
             setInsight(r.data);
             setAlerts(makeAlerts(r.data));
         } catch { alert(t('analyze.error')); }
