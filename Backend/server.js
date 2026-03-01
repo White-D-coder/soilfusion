@@ -71,9 +71,14 @@ app.get("/", (req, res) => {
 
 // 4. Logout
 app.get('/api/auth/logout', (req, res) => {
-    req.logout(() => {
-        req.session.destroy();
-        res.json({ message: 'Logged out successfully' });
+    req.logout((err) => {
+        if (req.session) {
+            req.session.destroy(() => {
+                res.json({ message: 'Logged out successfully' });
+            });
+        } else {
+            res.json({ message: 'Logged out successfully (no session)' });
+        }
     });
 });
 
@@ -86,8 +91,12 @@ app.post('/api/auth/demo', (req, res) => {
         email: 'demo@soilfusion.app',
         picture: null,
     };
-    req.session.demoUser = demoUser;
-    res.json({ user: demoUser });
+    if (req.session) {
+        req.session.demoUser = demoUser;
+        res.json({ user: demoUser });
+    } else {
+        res.status(500).json({ error: 'Session store unavailable (MongoDB connecting...)' });
+    }
 });
 
 // Get current logged-in user (also checks demo session)
