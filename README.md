@@ -603,8 +603,8 @@ Deployment
 
 - Live Demo Link:
 - Demo Video Link:
-- [GitHub Repository:](https://github.com/White-D-coder/soilfusion)
-
+- GitHub Repository: https://github.com/White-D-coder/soilfusion
+- Presentation link: https://www.canva.com/design/DAHCqtcFiaA/sdnp4u9aVTVlx8RTbRDzMQ/edit?utm_content=DAHCqtcFiaA&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 ---
 
 ## 12. Hackathon Deliverables Summary
