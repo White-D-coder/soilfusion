@@ -9,9 +9,10 @@ import seaborn as sns
 
 from sklearn.ensemble import RandomForestRegressor, IsolationForest
 from xgboost import XGBRegressor
-from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error, silhouette_score
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
 from sklearn.compose import ColumnTransformer
+from sklearn.cluster import KMeans
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import TimeSeriesSplit
 from skl2onnx import convert_sklearn
@@ -321,6 +322,70 @@ class SoilFusionMLPipeline:
         plt.savefig(os.path.join(self.plots_dir, 'anomaly_timeseries.png'))
         plt.close()
 
+    def train_soil_clustering(self):
+        logging.info("Training Soil Health Clustering Model (K-Means)...")
+        df = self.processed_df.copy()
+        
+        features = ['moisture', 'ph', 'nitrogen', 'temperature', 'rainfall']
+        X = df[features].fillna(df[features].mean())
+        
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(X)
+        
+        # Elbow method / finding best K
+        inertias = []
+        silhouettes = []
+        K_range = range(2, 6)
+        best_k = 3
+        best_score = -1
+        
+        for k in K_range:
+            # handle case where synthetic data might be too small
+            if len(X) <= k:
+                logging.warning("Not enough samples for clustering.")
+                return
+            kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+            labels = kmeans.fit_predict(X_scaled)
+            inertias.append(kmeans.inertia_)
+            score = silhouette_score(X_scaled, labels)
+            silhouettes.append(score)
+            if score > best_score:
+                best_score = score
+                best_k = k
+                
+        logging.info(f"K-Means Evaluation -> Optimal Clusters: {best_k} | Silhouette Score: {best_score:.4f} | Inertia at K={best_k}: {inertias[best_k-2]:.2f}")
+        
+        cluster_pipeline = Pipeline(steps=[
+            ('scaler', StandardScaler()),
+            ('model', KMeans(n_clusters=best_k, random_state=42, n_init=10))
+        ])
+        
+        df['soil_cluster'] = cluster_pipeline.fit_predict(X)
+        
+        initial_type = [('float_input', FloatTensorType([None, len(features)]))]
+        onx = convert_sklearn(cluster_pipeline, initial_types=initial_type, target_opset={'': 15, 'ai.onnx.ml': 3})
+        with open(os.path.join(self.model_dir, 'clustering_model.onnx'), "wb") as f:
+            f.write(onx.SerializeToString())
+            
+        self.models['clustering_model'] = cluster_pipeline
+        self.processed_df = df
+        
+        plt.figure(figsize=(12, 5))
+        plt.subplot(1, 2, 1)
+        plt.plot(list(K_range), inertias, marker='o')
+        plt.title('Elbow Method (Inertia)')
+        plt.xlabel('Number of Clusters (K)')
+        plt.ylabel('Inertia')
+        
+        plt.subplot(1, 2, 2)
+        plt.plot(list(K_range), silhouettes, marker='s', color='green')
+        plt.title('Silhouette Score vs K')
+        plt.xlabel('Number of Clusters (K)')
+        plt.ylabel('Silhouette Score')
+        plt.tight_layout()
+        plt.savefig(os.path.join(self.plots_dir, 'clustering_evaluation.png'))
+        plt.close()
+
     def generate_visualizations(self):
         logging.info("Generating Correlation Output...")
         df = self.processed_df.copy()
@@ -451,6 +516,7 @@ if __name__ == "__main__":
     pipeline.preprocess_data()
     pipeline.train_yield_prediction()
     pipeline.train_anomaly_detection()
+    pipeline.train_soil_clustering()
     pipeline.generate_visualizations()
     
     print("\n" + "=" * 50)
