@@ -21,6 +21,7 @@ const detect = () => {
     return 'en';
 };
 
+/* eslint-disable react-refresh/only-export-components */
 export const LanguageProvider = ({ children }) => {
     const [lang, setL] = useState(detect);
     const setLang = useCallback((l) => { setL(l); localStorage.setItem('sf_lang', l); }, []);

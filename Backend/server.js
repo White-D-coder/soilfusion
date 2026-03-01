@@ -12,7 +12,7 @@ const passport = require('./config/passport');
 const AnalysisHistory = require('./models/AnalysisHistory');
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // ── MongoDB Connection ──────────────────────────────────────────────────────
@@ -64,6 +64,9 @@ app.get('/api/auth/google/callback',
         res.redirect(`${FRONTEND_URL}/dashboard`);
     }
 );
+app.get("/", (req, res) => {
+    res.send("SoilFusion API is running");
+});
 
 
 // 4. Logout
@@ -252,4 +255,6 @@ setInterval(() => {
         .catch(e => console.error('Keep-alive failed:', e.message));
 }, 10 * 60 * 1000);
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
