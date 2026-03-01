@@ -9,9 +9,11 @@ import seaborn as sns
 
 from sklearn.ensemble import RandomForestRegressor, IsolationForest
 from xgboost import XGBRegressor
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import TimeSeriesSplit
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
 import onnxruntime as rt
@@ -177,50 +179,82 @@ class SoilFusionMLPipeline:
         train_data = train_data[~((train_data['yield_value'] < (Q1 - 1.5 * IQR)) | (train_data['yield_value'] > (Q3 + 1.5 * IQR)))]
         
         le = LabelEncoder()
-        train_data['soil_type_encoded'] = le.fit_transform(train_data['soil_type'].astype(str))
+        train_data['soil_type'] = le.fit_transform(train_data['soil_type'].astype(str))
         self.encoders['soil_type'] = le
         
-        features = [
+        train_data = train_data.sort_values(by=['year', 'season'])
+        
+        features_num = [
             'avg_moisture', 'avg_ph', 'avg_nitrogen', 'avg_temperature', 'rainfall', 
-            'humidity', 'soil_type_encoded', 'crop_id', 'roll_mean_moisture', 
+            'humidity', 'crop_id', 'roll_mean_moisture', 
             'roll_mean_ph', 'roll_mean_nitrogen', 'stability_score'
         ]
+        features_cat = ['soil_type']
+        features = features_num + features_cat
         
         X = train_data[features]
         y = train_data['yield_value']
         
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        features_num_idx = [features.index(c) for c in features_num]
+        features_cat_idx = [features.index(c) for c in features_cat]
+
+        tscv = TimeSeriesSplit(n_splits=3)
+        for train_index, test_index in tscv.split(X):
+            X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
         
-        rf = RandomForestRegressor(n_estimators=100, random_state=42)
-        rf.fit(X_train, y_train)
-        rf_pred = rf.predict(X_test)
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ('num', StandardScaler(), features_num_idx),
+                ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), features_cat_idx)
+            ])
+        
+        rf_pipeline = Pipeline(steps=[('preprocessor', preprocessor),
+                                      ('model', RandomForestRegressor(n_estimators=100, random_state=42))])
+        rf_pipeline.fit(X_train, y_train)
+        rf_pred = rf_pipeline.predict(X_test)
         rf_r2 = r2_score(y_test, rf_pred)
         
-        X_train_xgb = X_train.copy()
-        X_test_xgb = X_test.copy()
-        X_train_xgb.columns = [f"f{i}" for i in range(len(features))]
-        X_test_xgb.columns = [f"f{i}" for i in range(len(features))]
+        rf_train_r2 = r2_score(y_train, rf_pipeline.predict(X_train))
         
-        xgb = XGBRegressor(n_estimators=100, random_state=42)
-        xgb.fit(X_train_xgb, y_train)
-        xgb_pred = xgb.predict(X_test_xgb)
+        xgb_pipeline = Pipeline(steps=[('preprocessor', preprocessor),
+                                       ('model', XGBRegressor(n_estimators=100, random_state=42))])
+        
+        # XGBoost requires feature names to be strings, pipelines handle this internally usually but let's be safe
+        xgb_pipeline.fit(X_train, y_train)
+        xgb_pred = xgb_pipeline.predict(X_test)
         xgb_r2 = r2_score(y_test, xgb_pred)
+        xgb_train_r2 = r2_score(y_train, xgb_pipeline.predict(X_train))
         
-        logging.info(f"RandomForest -> R2: {rf_r2:.4f}, RMSE: {np.sqrt(mean_squared_error(y_test, rf_pred)):.4f}")
-        logging.info(f"XGBoost -> R2: {xgb_r2:.4f}, RMSE: {np.sqrt(mean_squared_error(y_test, xgb_pred)):.4f}")
+        logging.info(f"RandomForest -> Train R2: {rf_train_r2:.4f} | Test R2: {rf_r2:.4f}, Test RMSE: {np.sqrt(mean_squared_error(y_test, rf_pred)):.4f}")
+        logging.info(f"XGBoost      -> Train R2: {xgb_train_r2:.4f} | Test R2: {xgb_r2:.4f}, Test RMSE: {np.sqrt(mean_squared_error(y_test, xgb_pred)):.4f}")
         
-        best_model = rf if rf_r2 >= xgb_r2 else xgb
+        best_model = rf_pipeline if rf_r2 >= xgb_r2 else xgb_pipeline
         best_name = "RandomForest" if rf_r2 >= xgb_r2 else "XGBoost"
         best_pred = rf_pred if rf_r2 >= xgb_r2 else xgb_pred
+        
+        self.features_num = features_num
+        self.features_cat = features_cat
         
         logging.info(f"Selected Best Model: {best_name}")
         
         initial_type = [('float_input', FloatTensorType([None, len(features)]))]
-        if best_name == "XGBoost":
-            from onnxmltools.convert import convert_xgboost
-            onx = convert_xgboost(best_model, initial_types=initial_type)
-        else:
-            onx = convert_sklearn(best_model, initial_types=initial_type)
+        # Pipeline model types might need different initial types for categorical, handling as strings if string inputs, but we already encoded strings or handled them.
+        # We actually just provide a dataframe to the pipeline usually. For ONNX with dicts:
+        # Better: let's just register XGBoost to skl2onnx and use convert_sklearn for everything
+        from skl2onnx import update_registered_converter
+        from skl2onnx.shape_calculators.linear_regressor import calculate_linear_regressor_output_shapes
+        from onnxmltools.convert.xgboost.operator_converters.XGBoost import convert_xgboost
+        
+        try:
+            update_registered_converter(
+                XGBRegressor, 'XGBoostXGBRegressor',
+                calculate_linear_regressor_output_shapes, convert_xgboost
+            )
+        except Exception as e:
+            pass # Already registered
+
+        onx = convert_sklearn(best_model, initial_types=initial_type, target_opset={'': 15, 'ai.onnx.ml': 3})
             
         with open(os.path.join(self.model_dir, 'yield_model.onnx'), "wb") as f:
             f.write(onx.SerializeToString())
@@ -228,7 +262,11 @@ class SoilFusionMLPipeline:
         self.models['yield_model'] = best_model
         
         plt.figure(figsize=(10, 6))
-        sns.barplot(x=best_model.feature_importances_, hue=features, palette='viridis', legend=False)
+        # Get feature names after preprocessing
+        num_names = self.features_num
+        cat_names = best_model.named_steps['preprocessor'].named_transformers_['cat'].get_feature_names_out(self.features_cat)
+        encoded_features = list(num_names) + list(cat_names)
+        sns.barplot(x=best_model.named_steps['model'].feature_importances_, hue=encoded_features, palette='viridis', legend=False)
         plt.title(f'Feature Importance ({best_name})')
         plt.tight_layout()
         plt.savefig(os.path.join(self.plots_dir, 'feature_importance.png'))
@@ -251,20 +289,24 @@ class SoilFusionMLPipeline:
         features = ['moisture', 'ph', 'nitrogen', 'temperature', 'rainfall']
         X = df[features].fillna(df[features].mean())
         
-        iso_forest = IsolationForest(contamination=0.05, random_state=42)
-        df['anomaly_label'] = iso_forest.fit_predict(X)
-        df['anomaly_score'] = iso_forest.decision_function(X)
+        iso_pipeline = Pipeline(steps=[
+            ('scaler', StandardScaler()),
+            ('model', IsolationForest(contamination=0.05, random_state=42))
+        ])
+        
+        df['anomaly_label'] = iso_pipeline.fit_predict(X)
+        df['anomaly_score'] = iso_pipeline.named_steps['model'].decision_function(iso_pipeline.named_steps['scaler'].transform(X))
         
         anomalies = df[df['anomaly_label'] == -1]
         pct = (len(anomalies) / len(df)) * 100
         logging.info(f"Isolation Forest flagged {pct:.2f}% of the timeline as anomalies.")
         
         initial_type = [('float_input', FloatTensorType([None, len(features)]))]
-        onx = convert_sklearn(iso_forest, initial_types=initial_type, target_opset={'': 15, 'ai.onnx.ml': 3})
+        onx = convert_sklearn(iso_pipeline, initial_types=initial_type, target_opset={'': 15, 'ai.onnx.ml': 3})
         with open(os.path.join(self.model_dir, 'anomaly_model.onnx'), "wb") as f:
             f.write(onx.SerializeToString())
             
-        self.models['anomaly_model'] = iso_forest
+        self.models['anomaly_model'] = iso_pipeline
         self.processed_df = df
         
         plt.figure(figsize=(12, 5))
