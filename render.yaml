@@ -2,7 +2,7 @@ services:
   # Backend — Node.js + Python ML
   - type: web
     name: soilfusion-backend
-    runtime: node
+    env: node
     rootDir: Backend
     buildCommand: pip3 install pandas numpy scikit-learn xgboost onnxmltools skl2onnx && npm install
     startCommand: npm start
@@ -18,7 +18,7 @@ services:
   # Frontend — Vite React (static site)
   - type: web
     name: soilfusion-frontend
-    runtime: static
+    env: static
     rootDir: Frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
